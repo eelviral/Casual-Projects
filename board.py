@@ -1,21 +1,20 @@
 import pygame
 from chess import Chess
 
-
 class Board(Chess):
     def __init__(self):
         super().__init__()
+        self.screen = pygame.display.set_mode((self.length, self.width))
+        pygame.display.set_caption('Chess Game')
 
     def draw_board(self):
-        size = 20
+        size = self.length / 8
         count = 0
-        for i in range(1, self.length + 1):
-            for j in range(1, self.length + 1):
+        self.screen.fill(self.black)
+        for i in range(self.length + 1):
+            for j in range(self.length):
                 if count % 2 == 0:
                     pygame.draw.rect(self.screen, self.white, [
-                                     size*j, size*i, size, size])
-                else:
-                    pygame.draw.rect(self.screen, self.black, [
                                      size*j, size*i, size, size])
                 count += 1
             count -= 1
