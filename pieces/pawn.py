@@ -1,6 +1,6 @@
 from pieces.piece import Piece
 
-class King(Piece):
+class Pawn(Piece):
     def __init__(self):
         super().__init__()
-        print("King " + self.piece)
+        print("Pawn " + self.piece)

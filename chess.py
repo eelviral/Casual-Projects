@@ -7,9 +7,11 @@ import pieces
 import pygame
 
 from pieces.king import King
+from pieces.queen import Queen
 
 class Chess:
     def __init__(self):
         pass
 if __name__ == '__main__':
     King()
+    Queen()
