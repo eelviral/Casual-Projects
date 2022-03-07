@@ -1,3 +1,4 @@
+import pieces
 from pieces.piece import Piece
 
 class Bishop(Piece):
