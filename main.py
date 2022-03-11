@@ -1,13 +1,13 @@
-from chess import Chess
+from game import Chess
 from board import Board
 import pygame
 
 if __name__ == '__main__':
-    chess_game = Chess()
+    game = Chess()
     board = Board()
-
     # clock = pygame.time.Clock()
 
+    board.reset_board()
     running = True
     while running:
         # pygame.time.delay(30)
@@ -16,5 +16,4 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        board.draw_board()
-    
+        game.draw_board()
