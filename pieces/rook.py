@@ -1,4 +1,4 @@
-from pieces.piece import Piece, override
+from piece import Piece, override
 
 class Rook(Piece):
     def __init__(self, white):

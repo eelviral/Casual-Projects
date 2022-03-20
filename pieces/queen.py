@@ -1,4 +1,4 @@
-from pieces.piece import Piece, override
+from piece import Piece, override
 
 class Queen(Piece):
     def __init__(self, white):

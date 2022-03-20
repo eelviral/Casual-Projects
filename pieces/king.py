@@ -1,11 +1,11 @@
-from pieces.piece import Piece, override
+from piece import Piece, override
 import math
 
 class King(Piece):
     castled = False
     
     def __init__(self, white):
-        super().__init__(white)       
+        super().__init__(white)    
     
     @override(Piece)
     def can_move(self, board, start, end) -> bool:
@@ -16,8 +16,8 @@ class King(Piece):
         if end.get_piece().is_white() == self.is_white():
             return False
         
-        x = math.abs(start.get_x() - end.get_x())
-        y = math.abs(start.get_y() - end.get_y())
+        x = math.abs(start.get_pos_x() - end.get_pos_x())
+        y = math.abs(start.get_pos_y() - end.get_pos_y())
         
         if (x + y) == 1:
             return True

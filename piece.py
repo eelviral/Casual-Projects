@@ -19,6 +19,12 @@ class Piece:
     
     def can_move(self, board, start, end) -> bool: _abstract()
     
+    def __str__(self):
+        if self.white:
+            return f"White {type(self).__name__}"
+        else :
+            return f"Black {type(self).__name__}"
+    
 def _abstract():
     raise NotImplementedError
     
