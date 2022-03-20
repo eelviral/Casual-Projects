@@ -1,4 +1,4 @@
-from pieces.piece import Piece
+from piece import Piece
 
 class Spot:
     def __init__(self, x, y, piece):
@@ -23,3 +23,6 @@ class Spot:
     
     def set_pos_y(self, y):
         self.y = y
+        
+    def __str__(self):
+        return f"{self.piece} {self.x} {self.y}"
