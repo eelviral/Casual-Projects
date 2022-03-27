@@ -1,7 +1,7 @@
 from piece import Piece
 
 
-class Spot:
+class Spot(object):
     """A class used to represent a Spot on a chessboard
 
     Attributes
@@ -54,7 +54,7 @@ class Spot:
 
         Returns: int
         """
-        return self._x
+        return self._y
 
     @y.setter
     def y(self, value):
