@@ -1,4 +1,8 @@
-from board import Board
+# Name: Chess Program
+# Author: Eddie Elvira (@eelviral)
+# Github_Page: https://www.github.com/eelviral/
+# Created_On: Monday, March 7, 2022 at 05:51 UTC
+
 from game import Game
 import pygame
 
@@ -8,7 +12,7 @@ if __name__ == '__main__':
     pygame.init()
     game = Game()
     game.load_images()
-    
+
     running = True
     clock = pygame.time.Clock()
     while running:
@@ -21,5 +25,4 @@ if __name__ == '__main__':
                 break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.mouse_click(event.pos)
-                # check_mouse_click(event.pos)
         game.draw_board()
