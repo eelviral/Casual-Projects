@@ -1,12 +1,5 @@
-# Name: Chess Program
-# Author: Eddie Elvira (@eelviral)
-# Github_Page: https://www.github.com/eelviral/
-# Created_On: Monday, March 7, 2022 at 05:51 UTC
-
-from functools import wraps
 import pygame
 from board import Board
-from move import Move
 from itertools import product
 import math
 
@@ -26,8 +19,11 @@ class GameStatus:
     STALEMATE = 4
     RESIGNATION = 5
 
+
 class Game:
     board = Board()
+    start = end = None
+    moves_played = []
 
     def __init__(self):
         self.length = self.width = WIDTH
@@ -36,7 +32,13 @@ class Game:
         self.screen = pygame.display.set_mode((self.length, self.width))
         pygame.display.set_caption('Chess Game')
         self.board.reset_board()
-        self.start = self.end = None
+
+    def player_move(self, start_x, start_y, end_x, end_y) -> bool:
+        start_box = self.board.get_box(start_x, start_y)
+        end_box = self.board.get_box(end_x, end_y)
+        if start_box.piece is None:
+            return False
+        return start_box.piece.can_move(self.board, start_box, end_box)
 
     @staticmethod
     def load_images() -> None:
@@ -49,9 +51,9 @@ class Game:
                     (SQ_SIZE, SQ_SIZE))
 
     def draw_board(self) -> None:
-        '''
+        """
         Display black and white checkerboard background
-        '''
+        """
         size = SQ_SIZE
         count = 0
         self.screen.fill(self.black)
@@ -59,16 +61,16 @@ class Game:
             for j in range(self.length):
                 if count % 2 == 0:
                     pygame.draw.rect(self.screen, self.white, [
-                                     size*j, size*i, size, size])
+                        size * j, size * i, size, size])
                 count += 1
             count -= 1
-        
+
         self.draw_pieces()
         pygame.display.update()
 
     def draw_pieces(self) -> None:
         boxes = self.board.boxes
-        
+
         for row in boxes:
             for box in row:
                 desc = str(box).split()
@@ -76,11 +78,12 @@ class Game:
                     continue
                 color, piece = [i.lower() for i in desc[:2]]
                 row, col = [int(i) for i in desc[2:]]
-                     
-                self.screen.blit(IMAGES[color][piece], (int(col) * SQ_SIZE, int(row) * SQ_SIZE))
+
+                self.screen.blit(IMAGES[color][piece], (int(
+                    col) * SQ_SIZE, int(row) * SQ_SIZE))
                 SQUARES[(col, row)] = f'{color} {piece}'
-    
-    def mouse_click(self, pos):        
+
+    def mouse_click(self, pos):
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
 
         if (mouse_x, mouse_y) in SQUARES.keys():
@@ -91,5 +94,11 @@ class Game:
             else:
                 if self.start is not None:
                     self.end = (mouse_x, mouse_y)
+
         if self.start is not None and self.end is not None:
-            print(f'{SQUARES[self.start]} at {self.start} moves to {self.end}')
+            if self.player_move(self.start[1], self.start[0], self.end[1], self.end[0]):
+                self.board.move_piece(
+                    self.start[1], self.start[0], self.end[1], self.end[0])
+                SQUARES[self.start] = None
+            self.start = None
+            self.end = None
