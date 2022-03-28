@@ -31,7 +31,9 @@ python main.py
 
 ## Screenshot(s)
 
-<img src="./images/screenshots/Chess-Game-Screenshot.png" alt="Chess Game Window" width="450"/>
+<img src="./images/screenshots/Chess-Game-Start-Screenshot.png" alt="Chess Game Window" width="400"/>
+<br></br>
+<img src="./images/screenshots/Chess-Game-Opening-Screenshot.png" alt="Chess Game Window" width="400"/>
 
 ## License
 
