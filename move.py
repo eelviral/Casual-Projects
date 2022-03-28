@@ -14,7 +14,8 @@ class Move:
     piece_moved : Piece
         The Piece that is moving from start to end
     """
-    castling_move = False
+    _castling_move = False
+    _promotion = False
 
     def __init__(self, start, end):
         # self.player = player
@@ -47,18 +48,36 @@ class Move:
         return self._piece_moved
 
     @property
-    def is_castling_move(self) -> bool:
+    def castling_move(self) -> bool:
         """Get or set castling move status
 
         Returns: bool
             - True if castling move was played
             - False if castling move was not played
         """
-        return self._is_castling_move
+        return self._castling_move
 
-    @is_castling_move.setter
-    def is_castling_move(self, value) -> None:
+    @castling_move.setter
+    def castling_move(self, value) -> None:
         if type(value) == bool:
-            self._is_castling_move = value
+            self._castling_move = value
         else:
             raise TypeError("is_castling_move must be a boolean")
+    
+    @property    
+    def promotion(self):
+        """Get or set pawn promotion status
+
+        Returns: bool
+            - True if a pawn is being promoted
+            - False if no pawn is being promoted
+        """
+        return self._promotion
+
+    @promotion.setter
+    def promotion(self, value):
+        if type(value) == bool:
+            self._promotion = value
+        else:
+            raise TypeError("promotion must be a boolean")
+        
