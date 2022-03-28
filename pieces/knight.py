@@ -10,14 +10,14 @@ class Knight(Piece):
         """
         Determines if knight can currently move to marked position
         """
-        # If end position is empty, move
-        if end.piece is None:
-            return True
-        # Cannot move if there's a piece at the end position of the same color
-        elif end.piece.is_white == self.is_white:
-            return False
-
-        x = abs(start.get_pos_x() - end.get_pos_x())
-        y = abs(start.get_pos_y() - end.get_pos_y())
-
-        return x * y == 2
+        x = abs(start.x - end.x)
+        y = abs(start.y - end.y)
+        if x * y == 2:
+            # If end position is empty, move
+            if end.piece is None:
+                return True
+            # Cannot move if there's a piece at the end position of the same color
+            if end.piece.is_white == self.is_white:
+                return False
+            else:
+                return True

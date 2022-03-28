@@ -12,19 +12,20 @@ class King(Piece):
         """
         Determines if king can currently move to marked position
         """
-        # If end position is empty, move
-        if end.piece is None:
-            return True
 
-        # Cannot move if there's a piece at the end position of the same color
-        if end.piece.is_white == self.is_white:
-            return False
+        x = abs(end.x - start.x)
+        y = abs(end.y - start.y)
 
-        x = abs(start.get_pos_x() - end.get_pos_x())
-        y = abs(start.get_pos_y() - end.get_pos_y())
+        if (x + y) == 1 or (x == 1 and y == 1):
+            # If end position is empty, move
+            if end.piece is None:
+                return True
 
-        if (x + y) == 1:
-            return True
+            # Cannot move if there's a piece at the end position of the same color
+            if end.piece.is_white == self.is_white:
+                return False
+            else:
+                return True
 
         return self.is_valid_castle(board, start, end)
 

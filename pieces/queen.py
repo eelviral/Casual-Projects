@@ -1,4 +1,6 @@
 from piece import Piece, override
+from pieces.rook import Rook
+from pieces.bishop import Bishop
 
 
 class Queen(Piece):
@@ -10,10 +12,6 @@ class Queen(Piece):
         """
         Determines if queen can currently move to marked position
         """
-        # If end position is empty, move
-        if end.piece is None:
+        if (Rook(self.is_white).can_move(board, start, end)
+            or Bishop(self.is_white).can_move(board, start, end)):
             return True
-
-        # Cannot move if there's a piece at the end position of the same color
-        if end.piece.is_white == self.is_white:
-            return False
