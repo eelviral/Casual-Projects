@@ -1,6 +1,7 @@
 import pygame
 from board import Board
-from itertools import product
+from move import Move
+from pieces.king import King
 import math
 
 WIDTH = HEIGHT = 512
@@ -8,7 +9,6 @@ DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
 IMAGES = {'white': {},
           'black': {}}
-SQUARES = {i: None for i in list(product(range(8), range(8)))}
 
 
 class GameStatus:
@@ -32,8 +32,11 @@ class Highlight:
 
 
 class Game:
+    players = []
     board = Board()
-    start = end = None
+    current_turn = None
+    move = []
+    highlighted_boxes = []
     moves_played = []
 
     def __init__(self):
@@ -42,14 +45,95 @@ class Game:
         self.white = (222, 184, 135)
         self.screen = pygame.display.set_mode((self.length, self.width))
         pygame.display.set_caption('Chess Game')
+        self.load_images()
+        self._status = None
+
+    def init(self, p1, p2):
+        if len(self.players) == 0:
+            self.players.append(p1)
+            self.players.append(p2)
+        else:
+            self.players[0] = p1
+            self.players[1] = p2
+
         self.board.reset_board()
 
-    def player_move(self, start_x, start_y, end_x, end_y) -> bool:
+        if p1.is_white_side:
+            self.current_turn = p1
+        else:
+            self.current_turn = p2
+
+        self.moves_played.clear()
+
+    @property
+    def status(self) -> bool:
+        """Get or set the GameStatus
+
+        Returns: bool
+        """
+        return self._status
+
+    @status.setter
+    def status(self, value) -> None:
+        self._status = value
+
+    def player_move(self, player, start_x, start_y, end_x, end_y) -> bool:
         start_box = self.board.get_box(start_x, start_y)
-        end_box = self.board.get_box(end_x, end_y)
         if start_box.piece is None:
             return False
-        return start_box.piece.can_move(self.board, start_box, end_box)
+
+        end_box = self.board.get_box(end_x, end_y)
+        move = Move(player, start_box, end_box)
+        return self.make_move(move, player)
+
+    def make_move(self, move, player) -> bool:
+        start_piece = move.start.piece
+
+        # Cannot move an empty box
+        if start_piece is None:
+            return False
+
+        # Check if its player's turn
+        if player != self.current_turn:
+            return False
+        if start_piece.is_white != player.is_white_side:
+            return False
+
+        # Check if piece can make this move
+        if not start_piece.can_move(self.board, move.start, move.end):
+            return False
+
+        # Check if a piece is getting captured
+        end_piece = move.end.piece
+        if end_piece is not None:
+            end_piece.captured = True
+            move.piece_captured = end_piece
+
+        # Check if a castling move is occurring
+        if (start_piece is not None and isinstance(start_piece, King)
+                and start_piece.is_castling):
+            move.castling_move = True
+
+        # Keep track of move
+        self.moves_played.append(str(move))
+
+        # Move the piece
+        move.end.piece = move.start.piece
+        move.start.piece = None
+
+        # Game ends when King is under attack
+        if end_piece is not None and isinstance(end_piece, King):
+            if player.is_white_side:
+                self.status = GameStatus.WHITE_WIN
+            else:
+                self.status = GameStatus.BLACK_WIN
+
+        # Let other player move next turn
+        if self.current_turn == self.players[0]:
+            self.current_turn = self.players[1]
+        else:
+            self.current_turn = self.players[0]
+        return True
 
     @staticmethod
     def load_images() -> None:
@@ -89,32 +173,48 @@ class Game:
 
         for row in boxes:
             for box in row:
-                desc = str(box).split()
-                if desc[0] == "None":
+                if box.piece is None:
                     continue
-                color, piece = [i.lower() for i in desc[:2]]
-                row, col = [int(i) for i in desc[2:]]
 
-                self.screen.blit(IMAGES[color][piece], (int(
-                    col) * SQ_SIZE, int(row) * SQ_SIZE))
-                SQUARES[(col, row)] = f'{color} {piece}'
+                color, piece = [i.lower() for i in str(box.piece).split()]
+                if box.piece.is_white:
+                    self.screen.blit(IMAGES[color][piece],
+                                     (int(box.y) * SQ_SIZE, int(box.x) * SQ_SIZE))
+                else:
+                    self.screen.blit(IMAGES[color][piece],
+                                     (int(box.y) * SQ_SIZE, int(box.x) * SQ_SIZE))
 
-    def mouse_click(self, pos):
+    def mouse_click(self, pos) -> None:
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
+        selected_piece = self.board.get_box(mouse_y, mouse_x).piece
+        if len(self.highlighted_boxes) >= 2:
+            self.highlighted_boxes.clear()
 
-        if (mouse_x, mouse_y) in SQUARES.keys():
-            if SQUARES[(mouse_x, mouse_y)] is not None:
-                if self.start is not None:
-                    self.end = None
-                self.start = (mouse_x, mouse_y)
+        # If a start piece has not been chosen
+        if len(self.move) == 0:
+            # Add start piece to move data if spot is not empty
+            if selected_piece is not None:
+                self.move.append((mouse_x, mouse_y))
+                self.highlighted_boxes.append(Highlight(mouse_x, mouse_y))
+        # If a start piece has been chosen
+        elif len(self.move) == 1:
+            # Switch chosen start piece if player picks piece of same color
+            if selected_piece is not None and selected_piece.is_white == self.board.get_box(self.move[0][0], self.move[0][1]).piece:
+                self.move[0] = (mouse_x, mouse_y)
+                self.highlighted_boxes[0] = Highlight(mouse_x, mouse_y)
+            # Add end position to move data if spot is empty or has opposite color piece
             else:
-                if self.start is not None:
-                    self.end = (mouse_x, mouse_y)
+                self.move.append((mouse_x, mouse_y))
+                self.highlighted_boxes.append(Highlight(mouse_x, mouse_y))
 
-        if self.start is not None and self.end is not None:
-            if self.player_move(self.start[1], self.start[0], self.end[1], self.end[0]):
-                self.board.move_piece(
-                    self.start[1], self.start[0], self.end[1], self.end[0])
-                SQUARES[self.start] = None
-            self.start = None
-            self.end = None
+        # If both a start and end piece have been chosen
+        if len(self.move) == 2:
+            # Check if the move is playable
+            if self.player_move(self.current_turn, self.move[0][1],
+                                self.move[0][0], self.move[1][1], self.move[1][0]):
+                print(self.moves_played[-1])
+                self.highlighted_boxes.append(Highlight(self.move[1][0], self.move[1][1]))
+            else:
+                self.highlighted_boxes.clear()
+            # Clear move data
+            self.move.clear()
