@@ -17,6 +17,10 @@ class Bishop(Piece):
         except ZeroDivisionError:
             return False
 
+        # Don't move if same square
+        if x == 0 and y == 0:
+            return False
+        
         # If bishop is moving diagonally
         if slope == 1:
             x_vector = -1 if x < 0 else 1
@@ -30,7 +34,7 @@ class Bishop(Piece):
                     break
                 elif xi == end.x and yi == end.y:
                     break
-                elif board.get_box(xi, yi).piece != None:
+                elif board.get_box(xi, yi).piece is not None:
                     return False
 
             # If end position is empty, move

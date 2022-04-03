@@ -13,6 +13,10 @@ class Rook(Piece):
         x = end.x - start.x
         y = end.y - start.y
 
+        # Don't move if same square
+        if x == 0 and y == 0:
+            return False
+        
         # If rook is moving horizontally or vertically
         if bool(x == 0) ^ bool(y == 0):
             # Make sure rook is not "jumping over" another piece horizontally
@@ -21,11 +25,11 @@ class Rook(Piece):
 
                 for i in range(1, 7):
                     yi = start.y + (y_vector * i)
-                    if (yi < 0 or yi > 7):
+                    if yi < 0 or yi > 7:
                         break
                     elif yi == end.y:
                         break
-                    elif board.get_box(start.x, yi).piece != None:
+                    elif board.get_box(start.x, yi).piece is not None:
                         return False
             # Make sure rook is not "jumping over" another piece vertically
             elif y == 0:
@@ -33,11 +37,11 @@ class Rook(Piece):
 
                 for i in range(1, 7):
                     xi = start.x + (x_vector * i)
-                    if (xi < 0 or xi > 7):
+                    if xi < 0 or xi > 7:
                         break
                     elif xi == end.x:
                         break
-                    elif board.get_box(xi, start.y).piece != None:
+                    elif board.get_box(xi, start.y).piece is not None:
                         return False
 
             # If end position is empty, move
@@ -47,3 +51,6 @@ class Rook(Piece):
             # Cannot move if there's a piece at the end position of the same color
             if end.piece.is_white == self.is_white:
                 return False
+            else:
+                return True
+        return False

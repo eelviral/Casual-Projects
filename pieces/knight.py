@@ -12,6 +12,11 @@ class Knight(Piece):
         """
         x = abs(start.x - end.x)
         y = abs(start.y - end.y)
+
+        # Don't move if same square
+        if x == 0 and y == 0:
+            return False
+
         if x * y == 2:
             # If end position is empty, move
             if end.piece is None:
@@ -21,3 +26,4 @@ class Knight(Piece):
                 return False
             else:
                 return True
+        return False
