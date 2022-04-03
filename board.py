@@ -13,11 +13,6 @@ class Board:
             raise Exception("Index out of bound.")
         return self.boxes[x][y]
 
-    def move_piece(self, start_x, start_y, end_x, end_y) -> None:
-        start_piece = self.get_box(start_x, start_y).piece
-        self.boxes[start_x][start_y] = Spot(start_x, start_y, None)
-        self.boxes[end_x][end_y] = Spot(end_x, end_y, start_piece)
-
     def add_first_rank(self, white) -> None:
         i = 0
         if not white:
