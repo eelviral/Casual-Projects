@@ -1,13 +1,13 @@
 class Piece:
-    """A class used to represent a Piece on a chessboard
+    """A parent class used to represent a Piece on a chessboard
 
     Attributes
     ----------
-    is_white : bool
+    _is_white : bool
         Determines if the Piece is white or black
-    name : str
+    _name : str
         Name of the Piece
-    captured : bool
+    _captured : bool
         Determines if the Piece is captured or not
     """
 
@@ -52,7 +52,7 @@ class Piece:
         return self._captured
 
     @captured.setter
-    def captured(self, value):
+    def captured(self, value) -> None:
         if type(value) == bool:
             self._captured = value
         else:

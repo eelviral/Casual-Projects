@@ -20,21 +20,21 @@ class Spot(object):
         self._y = y
 
     @property
-    def piece(self) -> Piece | None:
+    def piece(self) -> Piece:
         """Get or set Chess piece
 
-        Returns: Piece or None
+        Returns: Piece
         """
         return self._piece
 
     @piece.setter
-    def piece(self, value):
-        if type(value) == Piece:
+    def piece(self, value) -> None:
+        if isinstance(value, Piece):
             self._piece = value
         elif value is None:
             self._piece = None
         else:
-            raise TypeError("piece must be a Piece object or None")
+            raise TypeError("piece must be a Piece or NoneType")
 
     @property
     def x(self) -> int:
@@ -45,8 +45,11 @@ class Spot(object):
         return self._x
 
     @x.setter
-    def x(self, value):
-        self._x = value
+    def x(self, value) -> None:
+        if isinstance(value, int):
+            self._x = value
+        else:
+            raise TypeError("x must be an int")
 
     @property
     def y(self) -> int:
@@ -57,8 +60,11 @@ class Spot(object):
         return self._y
 
     @y.setter
-    def y(self, value):
-        self._y = value
+    def y(self, value) -> None:
+        if isinstance(value, int):
+            self._y = value
+        else:
+            raise TypeError("y must be an int")
 
     def __str__(self):
         return f"{self._piece} {self._x} {self._y}"
