@@ -20,6 +20,17 @@ class GameStatus:
     RESIGNATION = 5
 
 
+class Highlight:
+    def __init__(self, x, y, color=(227, 227, 118)):
+        self.x = x
+        self.y = y
+        self.color = color
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, (self.x*SQ_SIZE,
+                                              self.y*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+
+
 class Game:
     board = Board()
     start = end = None
@@ -64,6 +75,11 @@ class Game:
                         size * j, size * i, size, size])
                 count += 1
             count -= 1
+
+        # Add highlighted box
+        if len(self.highlighted_boxes) > 0:
+            for box in self.highlighted_boxes:
+                box.draw(self.screen)
 
         self.draw_pieces()
         pygame.display.update()
