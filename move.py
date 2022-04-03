@@ -1,3 +1,4 @@
+from player import Player
 from spot import Spot
 from piece import Piece
 
@@ -7,21 +8,32 @@ class Move:
 
     Attributes
     ----------
-    start : Spot
+    _player : Player
+        The Player currently allowed to move
+    _start : Spot
         Start position of a move
-    end : Spot
+    _end : Spot
         End position of a move
-    piece_moved : Piece
+    _piece_moved : Piece
         The Piece that is moving from start to end
     """
-    _castling_move = False
-    _promotion = False
 
-    def __init__(self, start, end):
-        # self.player = player
+    def __init__(self, player, start, end):
+        self._player = player
         self._start = start
         self._end = end
         self._piece_moved = start.piece
+        self._piece_captured = None
+        self._castling_move = False
+        self._promotion_move = False
+
+    @property
+    def player(self) -> Player:
+        """Get the current player
+
+        Returns: Player
+        """
+        return self._start
 
     @property
     def start(self) -> Spot:
@@ -48,6 +60,21 @@ class Move:
         return self._piece_moved
 
     @property
+    def piece_captured(self) -> Piece:
+        """Get or set captured piece
+
+        Returns: Piece
+        """
+        return self._piece_captured
+
+    @piece_captured.setter
+    def piece_captured(self, value) -> None:
+        if isinstance(value, Piece):
+            self._piece_captured = value
+        else:
+            raise TypeError("piece_captured must be a Piece")
+
+    @property
     def castling_move(self) -> bool:
         """Get or set castling move status
 
@@ -63,21 +90,30 @@ class Move:
             self._castling_move = value
         else:
             raise TypeError("is_castling_move must be a boolean")
-    
+
     @property    
-    def promotion(self):
-        """Get or set pawn promotion status
+    def promotion_move(self):
+        """Get or set pawn promotion move status
 
         Returns: bool
-            - True if a pawn is being promoted
-            - False if no pawn is being promoted
+            - True if promotion move was played
+            - False if promotion move was not played
         """
-        return self._promotion
+        return self._promotion_move
 
-    @promotion.setter
-    def promotion(self, value):
+    @promotion_move.setter
+    def promotion_move(self, value):
         if type(value) == bool:
-            self._promotion = value
+            self._promotion_move = value
         else:
-            raise TypeError("promotion must be a boolean")
-        
+            raise TypeError("promotion_move must be a boolean")
+
+    def __str__(self):
+        string = f'{self._piece_moved} at ({self._start.x},{self._start.y})'
+        if self._piece_captured:
+            return string + f' captured {self._end.piece} at ({self._end.x},{self._end.y})'
+
+        if self._promotion_move:
+            return string + f'\n{self._piece_moved} promoted!'
+
+        return string + f' moved to ({self._end.x},{self._end.y})'
