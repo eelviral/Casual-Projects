@@ -4,14 +4,18 @@
 # Created_On: Monday, March 7, 2022 at 05:51 UTC
 
 from game import Game
+from player import Human
 import pygame
 
 MAX_FPS = 15
 
 if __name__ == '__main__':
     pygame.init()
+
     game = Game()
-    game.load_images()
+    white = Human(True)
+    black = Human(False)
+    game.init(black, white)
 
     running = True
     clock = pygame.time.Clock()
