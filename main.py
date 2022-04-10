@@ -3,7 +3,7 @@
 # Github_Page: https://www.github.com/eelviral/
 # Created_On: Monday, March 7, 2022 at 05:51 UTC
 
-from game import Game
+from game import Game, GameStatus
 from player import Human
 import pygame
 
@@ -30,3 +30,10 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.mouse_click(event.pos)
         game.draw_board()
+
+        if game.status == GameStatus.BLACK_WIN:
+            print("Black Wins!")
+            running = False
+        elif game.status == GameStatus.WHITE_WIN:
+            print("White Wins!")
+            running = False
