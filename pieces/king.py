@@ -104,7 +104,3 @@ class King(Piece):
             self._is_castling = value
         else:
             raise TypeError("is_castling must be a boolean")
-
-    def is_valid_castle(self, board, start, end) -> bool:
-        if self._is_castling:
-            return False

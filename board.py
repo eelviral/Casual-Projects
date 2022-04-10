@@ -3,10 +3,11 @@ from pieces import *
 
 
 class Board:
-    boxes = []
-
     def __init__(self):
         super().__init__()
+        self.boxes = []
+        self._king_pieces = {'white': Spot(0, 0),
+                             'black': Spot(0, 0)}
 
     def get_box(self, x, y) -> Spot:
         if (x < 0 or x > 7) or (y < 0 or y > 7):
@@ -51,7 +52,7 @@ class Board:
         self.add_pawns(True)
 
         # Add empty boxes by marking them as None
-        self.boxes.extend([[Spot(i, j, None) for j in range(0, 8)]
+        self.boxes.extend([[Spot(i, j, None, None) for j in range(0, 8)]
                           for i in range(2, 6)])
 
         # Add black pieces
