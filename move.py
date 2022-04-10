@@ -128,10 +128,16 @@ class Move:
 
     def __str__(self):
         string = f'{self._piece_moved} at ({self._start.x},{self._start.y})'
-        if self._piece_captured:
-            return string + f' captured {self._end.piece} at ({self._end.x},{self._end.y})'
+        if self._piece_captured is not None:
+            return string + f' captured {self._piece_captured} at ({self._end.x},{self._end.y})'
 
         if self._promotion_move:
             return string + f'\n{self._piece_moved} promoted!'
+
+        if self._castling_move:
+            if self._piece_moved.is_white:
+                return string + f'White {self._piece_moved} castled'
+            else:
+                return string + f'Black {self._piece_moved} castled'
 
         return string + f' moved to ({self._end.x},{self._end.y})'
