@@ -34,14 +34,10 @@ python main.py
 ### Program start:
 
 <img src="./images/screenshots/Chess-Game-Start-Screenshot.png" alt="Chess Game Start Window" width="400"/>
-<br>
-<br>
 
 ### Opening position:
 
 <img src="./images/screenshots/Chess-Game-Opening-Screenshot.png" alt="Chess Game Opening Moves" width="400"/>
-<br>
-<br>
 
 ## License
 
