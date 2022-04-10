@@ -157,7 +157,7 @@ class Game:
                 return False
 
         # Keep track of move
-        self.moves_played.append(str(move))
+        self.moves_played.append(move)
 
         # Move the piece
         move.end.piece = move.start.piece
@@ -228,7 +228,7 @@ class Game:
                 count += 1
             count -= 1
 
-        # Add highlighted box
+        # Add highlighted boxes
         if len(self.highlighted_boxes) > 0:
             for box in self.highlighted_boxes:
                 box.draw(self.screen)
@@ -247,10 +247,10 @@ class Game:
                 color, piece = [i.lower() for i in str(box.piece).split()]
                 if box.piece.is_white:
                     self.screen.blit(IMAGES[color][piece],
-                                     (int(box.y) * SQ_SIZE, int(box.x) * SQ_SIZE))
+                                     (box.y * SQ_SIZE, box.x * SQ_SIZE))
                 else:
                     self.screen.blit(IMAGES[color][piece],
-                                     (int(box.y) * SQ_SIZE, int(box.x) * SQ_SIZE))
+                                     (box.y * SQ_SIZE, box.x * SQ_SIZE))
 
     def mouse_click(self, pos) -> None:
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]

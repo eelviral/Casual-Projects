@@ -23,25 +23,25 @@ class Rook(Piece):
             if x == 0:
                 y_vector = -1 if y < 0 else 1
 
-                for i in range(1, 7):
-                    yi = start.y + (y_vector * i)
-                    if yi < 0 or yi > 7:
+                for i in range(y_vector, 7 * y_vector, y_vector):
+                    next_y = start.y + i
+                    if next_y < 0 or next_y > 7:
                         break
-                    elif yi == end.y:
+                    elif next_y == end.y:
                         break
-                    elif board.get_box(start.x, yi).piece is not None:
+                    elif board.get_box(start.x, next_y).piece is not None:
                         return False
             # Make sure rook is not "jumping over" another piece vertically
             elif y == 0:
                 x_vector = -1 if x < 0 else 1
 
-                for i in range(1, 7):
-                    xi = start.x + (x_vector * i)
-                    if xi < 0 or xi > 7:
+                for i in range(x_vector, 7 * x_vector, x_vector):
+                    next_x = start.x + (x_vector * i)
+                    if next_x < 0 or next_x > 7:
                         break
-                    elif xi == end.x:
+                    elif next_x == end.x:
                         break
-                    elif board.get_box(xi, start.y).piece is not None:
+                    elif board.get_box(next_x, start.y).piece is not None:
                         return False
 
             # If end position is empty, move

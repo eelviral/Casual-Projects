@@ -27,7 +27,7 @@ class Piece:
         return self._is_white
 
     @is_white.setter
-    def is_white(self, value):
+    def is_white(self, value) -> None:
         if type(value) == bool:
             self._is_white = value
         else:
