@@ -26,6 +26,7 @@ class Move:
         self._piece_captured = None
         self._castling_move = False
         self._promotion_move = False
+        self._en_passant_legal = False
 
     @property
     def player(self) -> Player:
@@ -107,6 +108,23 @@ class Move:
             self._promotion_move = value
         else:
             raise TypeError("promotion_move must be a boolean")
+
+    @property
+    def en_passant_legal(self):
+        """Get or set if en passant is currently legal
+
+        Returns: bool
+            - True if en passant is a legal move
+            - False if en passant is an illegal move
+        """
+        return self._en_passant_legal
+
+    @en_passant_legal.setter
+    def en_passant_legal(self, value):
+        if type(value) == bool:
+            self._en_passant_legal = value
+        else:
+            raise TypeError("en_passant_legal must be a boolean")
 
     def __str__(self):
         string = f'{self._piece_moved} at ({self._start.x},{self._start.y})'

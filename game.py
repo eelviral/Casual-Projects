@@ -2,6 +2,7 @@ import pygame
 from board import Board
 from move import Move
 from pieces.king import King
+from pieces.pawn import Pawn
 import math
 import copy
 
@@ -128,11 +129,32 @@ class Game:
         if end_piece is not None:
             end_piece.captured = True
             move.piece_captured = end_piece
+        else:
+            if isinstance(start_piece, Pawn) and start_piece.en_passant:
+                y = move.end.y - move.start.y
+                end_piece = self.board.get_box(
+                    move.start.x, move.start.y + y).piece
+                move.piece_captured = end_piece
 
         # Check if a castling move is occurring
         if (start_piece is not None and isinstance(start_piece, King)
                 and start_piece.is_castling):
             move.castling_move = True
+
+        # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
+        if (start_piece is not None and isinstance(start_piece, Pawn)
+                and start_piece.moves_made == 1 and start_piece.two_step_move):
+            move.en_passant_legal = True
+
+        # Check if a pawn moved two ranks to perform en passant move
+        if isinstance(start_piece, Pawn) and start_piece.en_passant:
+            if (self.moves_played[-1].en_passant_legal and
+                    self.moves_played[-1].end.y == move.end.y):
+                x = move.end.x - move.start.x
+                self.board.get_box(move.end.x - x, move.end.y).piece = None
+            else:
+                start_piece.en_passant = False
+                return False
 
         # Keep track of move
         self.moves_played.append(str(move))
