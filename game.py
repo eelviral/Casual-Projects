@@ -23,14 +23,23 @@ class GameStatus:
 
 
 class Highlight:
-    def __init__(self, x, y, color=(227, 227, 118)):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.color = color
+        if x % 2 == 0:
+            if y % 2 == 0:
+                self.color = (227, 227, 118)
+            else:
+                self.color = (191, 207, 91)
+        else:
+            if y % 2 == 0:
+                self.color = (191, 207, 91)
+            else:
+                self.color = (227, 227, 118)
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x*SQ_SIZE,
-                                              self.y*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+                         self.y*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
 class Game:
@@ -255,21 +264,26 @@ class Game:
     def mouse_click(self, pos) -> None:
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
         selected_piece = self.board.get_box(mouse_y, mouse_x).piece
-        if len(self.highlighted_boxes) >= 2:
-            self.highlighted_boxes.clear()
+        if len(self.highlighted_boxes) > 3:
+            self.highlighted_boxes = self.highlighted_boxes[3:]
 
         # If a start piece has not been chosen
         if len(self.move) == 0:
             # Add start piece to move data if spot is not empty
-            if selected_piece is not None:
+            if selected_piece is not None and selected_piece.is_white == self.current_turn.is_white_side:
                 self.move.append((mouse_x, mouse_y))
                 self.highlighted_boxes.append(Highlight(mouse_x, mouse_y))
         # If a start piece has been chosen
         elif len(self.move) == 1:
+            end_spot = self.board.get_box(
+                self.move[0][1], self.move[0][0]).piece
             # Switch chosen start piece if player picks piece of same color
-            if selected_piece is not None and selected_piece.is_white == self.board.get_box(self.move[0][0], self.move[0][1]).piece:
+            if (selected_piece is not None and end_spot is not None) and selected_piece.is_white == end_spot.is_white:
                 self.move[0] = (mouse_x, mouse_y)
-                self.highlighted_boxes[0] = Highlight(mouse_x, mouse_y)
+                if len(self.highlighted_boxes) == 1:
+                    self.highlighted_boxes[0] = Highlight(mouse_x, mouse_y)
+                elif len(self.highlighted_boxes) == 3:
+                    self.highlighted_boxes[2] = Highlight(mouse_x, mouse_y)
             # Add end position to move data if spot is empty or has opposite color piece
             else:
                 self.move.append((mouse_x, mouse_y))
@@ -280,8 +294,9 @@ class Game:
             # Check if the move is playable
             if self.player_move(self.current_turn, self.move[0][1],
                                 self.move[0][0], self.move[1][1], self.move[1][0]):
-                print(self.moves_played[-1])
-                self.highlighted_boxes.append(Highlight(self.move[1][0], self.move[1][1]))
+                print(str(self.moves_played[-1]))
+                self.highlighted_boxes.append(
+                    Highlight(self.move[1][0], self.move[1][1]))
             else:
                 self.highlighted_boxes.clear()
             # Clear move data
