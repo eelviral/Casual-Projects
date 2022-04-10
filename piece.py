@@ -60,6 +60,8 @@ class Piece:
 
     def can_move(self, board, start, end): _abstract()
 
+    def controlled_squares(self, board, x, y): _abstract()
+
     def __str__(self):
         if self._is_white:
             return f"White {type(self).__name__}"

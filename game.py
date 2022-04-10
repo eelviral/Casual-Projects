@@ -3,6 +3,7 @@ from board import Board
 from move import Move
 from pieces.king import King
 import math
+import copy
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -57,6 +58,7 @@ class Game:
             self.players[1] = p2
 
         self.board.reset_board()
+        self.board.update_controlled_squares()
 
         if p1.is_white_side:
             self.current_turn = p1
@@ -93,6 +95,24 @@ class Game:
         if start_piece is None:
             return False
 
+        # If king is in check, make sure that the next move gets king out of check
+        if not isinstance(start_piece, King):
+            board = copy.deepcopy(self.board)
+            if start_piece.is_white and board.king_pieces["white"].piece.in_check:
+                board.get_box(move.end.x, move.end.y).piece = move.start.piece
+                board.get_box(move.start.x, move.start.y).piece = None
+                board.update_controlled_squares()
+                king_box = board.king_pieces["white"]
+                if king_box.piece.risk_check(board, king_box):
+                    return False
+            elif (not start_piece.is_white) and board.king_pieces["black"].piece.in_check:
+                board.get_box(move.end.x, move.end.y).piece = move.start.piece
+                board.get_box(move.start.x, move.start.y).piece = None
+                board.update_controlled_squares()
+                king_box = board.king_pieces["black"]
+                if king_box.piece.risk_check(board, king_box):
+                    return False
+
         # Check if its player's turn
         if player != self.current_turn:
             return False
@@ -119,7 +139,25 @@ class Game:
 
         # Move the piece
         move.end.piece = move.start.piece
+        move.end.controlled_squares = move.start.piece.controlled_squares(
+            self.board, move.end.x, move.end.y)
         move.start.piece = None
+        move.start.controlled_squares = None
+        
+        if isinstance(move.end.piece, King):
+            if move.end.piece.is_white:
+                self.board.king_pieces["white"] = move.end
+            else:
+                self.board.king_pieces["black"] = move.end
+        
+        if move.end.piece.is_white:
+            king_box = self.board.king_pieces["black"]
+            if king_box.piece.risk_check(self.board, king_box):
+                king_box.piece.in_check = True
+        else:
+            king_box = self.board.king_pieces["white"]
+            if king_box.piece.risk_check(self.board, king_box):
+                king_box.piece.in_check = True
 
         # Game ends when King is under attack
         if end_piece is not None and isinstance(end_piece, King):
@@ -133,6 +171,14 @@ class Game:
             self.current_turn = self.players[1]
         else:
             self.current_turn = self.players[0]
+
+        if isinstance(start_piece, King):
+            if start_piece.is_white:
+                self.board.king_pieces["white"].piece.in_check = False
+            else:
+                self.board.king_pieces["black"].piece.in_check = False
+
+        self.board.update_controlled_squares()
         return True
 
     @staticmethod
