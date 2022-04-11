@@ -36,7 +36,7 @@ class Rook(Piece):
                 x_vector = -1 if x < 0 else 1
 
                 for i in range(x_vector, 7 * x_vector, x_vector):
-                    next_x = start.x + (x_vector * i)
+                    next_x = start.x + i
                     if next_x < 0 or next_x > 7:
                         break
                     elif next_x == end.x:
