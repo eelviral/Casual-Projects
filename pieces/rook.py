@@ -71,7 +71,11 @@ class Rook(Piece):
                     squares.append((x, next_y))
                 else:
                     if next_spot.piece.is_white != current_spot.piece.is_white:
-                        squares.append((x, next_y))
+                        if isinstance(next_spot.piece, King):
+                            squares.append((x, next_y))
+                            continue
+                        else:
+                            squares.append((x, next_y))
                     break
 
             for j in range(i, 7 * i, i):
@@ -84,6 +88,10 @@ class Rook(Piece):
                     squares.append((next_x, y))
                 else:
                     if next_spot.piece.is_white != current_spot.piece.is_white:
-                        squares.append((next_x, y))
+                        if isinstance(next_spot.piece, King):
+                            squares.append((next_x, y))
+                            continue
+                        else:
+                            squares.append((next_x, y))
                     break
         return squares

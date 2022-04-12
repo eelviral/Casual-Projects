@@ -67,6 +67,10 @@ class Bishop(Piece):
                     squares.append((next_x, next_y))
                 else:
                     if next_spot.piece.is_white != current_spot.piece.is_white:
-                        squares.append((next_x, next_y))
+                        if isinstance(next_spot.piece, King):
+                            squares.append((next_x, next_y))
+                            continue
+                        else:
+                            squares.append((next_x, next_y))
                     break
         return squares
