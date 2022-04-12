@@ -17,21 +17,21 @@ class Board:
     def add_first_rank(self, white) -> None:
         if white:
             i = 0
-            self._king_pieces['white'] = Spot(i, 3, king.King(white), None)
+            self._king_pieces['white'] = Spot(i, 3, King(white))
             king_box = self._king_pieces['white']
         else:
             i = 7
-            self._king_pieces['black'] = Spot(i, 3, king.King(white), None)
+            self._king_pieces['black'] = Spot(i, 3, King(white))
             king_box = self._king_pieces['black']
 
-        row = [Spot(i, 0, rook.Rook(white), None),
-               Spot(i, 1, knight.Knight(white), None),
-               Spot(i, 2, bishop.Bishop(white), None),
+        row = [Spot(i, 0, Rook(white)),
+               Spot(i, 1, Knight(white)),
+               Spot(i, 2, Bishop(white)),
                king_box,
-               Spot(i, 4, queen.Queen(white), None),
-               Spot(i, 5, bishop.Bishop(white), None),
-               Spot(i, 6, knight.Knight(white), None),
-               Spot(i, 7, rook.Rook(white), None)]
+               Spot(i, 4, Queen(white)),
+               Spot(i, 5, Bishop(white)),
+               Spot(i, 6, Knight(white)),
+               Spot(i, 7, Rook(white))]
 
         self.boxes.append(row)
 
@@ -40,7 +40,7 @@ class Board:
         if not white:
             i = 6
 
-        self.boxes.append([Spot(i, j, pawn.Pawn(white), None)
+        self.boxes.append([Spot(i, j, Pawn(white))
                           for j in range(8)])
 
     def reset_board(self) -> None:
@@ -52,7 +52,7 @@ class Board:
         self.add_pawns(True)
 
         # Add empty boxes by marking them as None
-        self.boxes.extend([[Spot(i, j, None, None) for j in range(0, 8)]
+        self.boxes.extend([[Spot(i, j, None) for j in range(0, 8)]
                           for i in range(2, 6)])
 
         # Add black pieces
@@ -84,7 +84,7 @@ class Board:
     @king_pieces.setter
     def king_pieces(self, value) -> None:
         if isinstance(value, Spot):
-            if value.piece is not None and isinstance(value.piece, king.King):
+            if value.piece is not None and isinstance(value.piece, King):
                 if value.piece.is_white:
                     self._king_pieces['white'] = value
                 else:

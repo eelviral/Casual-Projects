@@ -1,4 +1,5 @@
 from piece import Piece, override
+from .king import King
 
 
 class Rook(Piece):

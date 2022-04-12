@@ -1,8 +1,7 @@
 import pygame
 from board import Board
 from move import Move
-from pieces.king import King
-from pieces.pawn import Pawn
+from pieces import King, Pawn
 import math
 import copy
 
