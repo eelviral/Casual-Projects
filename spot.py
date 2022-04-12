@@ -12,15 +12,15 @@ class Spot(object):
         y-coordinate (column) on the chessboard
     piece : Piece
         the Piece currently positioned at this Spot
-    controlled_squares : list
+    _controlled_squares : list
         the squares controlled by this Spot
     """
 
-    def __init__(self, x, y, piece=None, controlled_squares=None):
+    def __init__(self, x, y, piece=None):
         self._piece = piece
         self._x = x
         self._y = y
-        self._controlled_squares = controlled_squares
+        self._controlled_squares = None
 
     @property
     def piece(self) -> Piece:
