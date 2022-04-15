@@ -22,14 +22,12 @@ class Pawn(Piece):
         if x == 0 and y == 0:
             return False
 
-        if self._moves_made == 0 and y == 0:
+        if self.moves_made == 0 and y == 0:
             if ((self.is_white and x == 2 and start.x == 1) or
                     ((not self.is_white) and x == -2 and start.x == 6)):
-                self._two_step_move = True
-                self._moves_made += 1
+                self.two_step_move = True
+                self.moves_made += 1
                 return True
-            else:
-                self._moves_made += 1
 
         if not ((self.is_white and x == 1) or
                 (not self.is_white) and x == -1):
@@ -38,7 +36,7 @@ class Pawn(Piece):
         if y == 0:
             # If end position is empty, move
             if end.piece is None:
-                self._moves_made += 1
+                self.moves_made += 1
                 return True
             else:
                 return False
@@ -51,7 +49,7 @@ class Pawn(Piece):
             if end.piece.is_white == self.is_white:
                 return False
             else:
-                self._moves_made += 1
+                self.moves_made += 1
                 return True
         return self.is_valid_promotion(start, end)
 
