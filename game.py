@@ -1,7 +1,7 @@
 import pygame
 from board import Board
 from move import Move
-from pieces import King, Pawn
+from pieces import King, Pawn, Rook
 import math
 import copy
 
@@ -151,6 +151,12 @@ class Game:
         if (start_piece is not None and isinstance(start_piece, King)
                 and start_piece.is_castling):
             move.castling_move = True
+            y = move.end.y - move.start.y
+            rook_start = self.board.get_box(move.start.x, 0 if y < 0 else 7)
+            rook_end = self.board.get_box(move.start.x, move.end.y + 1 if y < 0 else move.end.y - 1)
+
+            rook_end.piece = rook_start.piece
+            rook_start.piece = None
 
         # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
         if (start_piece is not None and isinstance(start_piece, Pawn)

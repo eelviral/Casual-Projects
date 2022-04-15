@@ -135,9 +135,7 @@ class Move:
             return string + f'\n{self._piece_moved} promoted!'
 
         if self._castling_move:
-            if self._piece_moved.is_white:
-                return string + f'White {self._piece_moved} castled'
-            else:
-                return string + f'Black {self._piece_moved} castled'
+            y = self.end.y - self.start.y
+            return string + f" castled {'king' if y < 0 else 'queen'} side"
 
         return string + f' moved to ({self._end.x},{self._end.y})'

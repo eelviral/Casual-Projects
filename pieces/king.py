@@ -58,8 +58,24 @@ class King(Piece):
         return squares
 
     def is_valid_castle(self, board, start, end) -> bool:
-        if self._is_castling:
+        if self.moves_made > 0:
             return False
+
+        x = abs(end.x - start.x)
+        y = end.y - start.y
+        if abs(y) == 2 and x == 0:
+            y_vector = -1 if y < 0 else 1
+            for vector in range(y_vector, 2 * y_vector, y_vector):
+                next_y = start.y + vector
+                if self.risk_check(board, start.x, next_y):
+                    return False
+
+            from .rook import Rook
+            rook_box = board.get_box(start.x, 0 if y < 0 else 7).piece
+            if isinstance(rook_box, Rook) and rook_box.moves_made == 0:
+                self.is_castling = True
+                return True
+        return False
 
     def risk_check(self, board, end):
         for row in board.boxes:
