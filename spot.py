@@ -1,7 +1,7 @@
 from piece import Piece
 
 
-class Spot(object):
+class Spot:
     """A class used to represent a Spot on a chessboard
 
     Attributes

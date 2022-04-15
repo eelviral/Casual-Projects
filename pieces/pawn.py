@@ -26,7 +26,6 @@ class Pawn(Piece):
             if ((self.is_white and x == 2 and start.x == 1) or
                     ((not self.is_white) and x == -2 and start.x == 6)):
                 self.two_step_move = True
-                self.moves_made += 1
                 return True
 
         if not ((self.is_white and x == 1) or
@@ -36,7 +35,6 @@ class Pawn(Piece):
         if y == 0:
             # If end position is empty, move
             if end.piece is None:
-                self.moves_made += 1
                 return True
             else:
                 return False
@@ -49,7 +47,6 @@ class Pawn(Piece):
             if end.piece.is_white == self.is_white:
                 return False
             else:
-                self.moves_made += 1
                 return True
         return self.is_valid_promotion(start, end)
 
@@ -129,21 +126,6 @@ class Pawn(Piece):
             self._two_step_move = value
         else:
             raise TypeError("two_step_move must be a boolean")
-
-    @property
-    def moves_made(self) -> int:
-        """Get or set the amount of moves made by pawn
-
-        Returns: int
-        """
-        return self._moves_made
-
-    @moves_made.setter
-    def moves_made(self, value) -> None:
-        if isinstance(value, int):
-            self._moves_made = value
-        else:
-            raise TypeError("moves_made must be an integer")
 
     @property
     def en_passant(self) -> bool:

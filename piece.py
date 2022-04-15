@@ -9,12 +9,15 @@ class Piece:
         Name of the Piece
     _captured : bool
         Determines if the Piece is captured or not
+    _moves_made : int
+        Number of moves made by Piece
     """
 
     def __init__(self, white):
         self._is_white = white
         self._name = type(self).__name__
         self._captured = False
+        self._moves_made = 0
 
     @property
     def is_white(self) -> bool:
@@ -57,6 +60,21 @@ class Piece:
             self._captured = value
         else:
             raise TypeError("captured must be a boolean")
+
+    @property
+    def moves_made(self) -> int:
+        """Get or set the amount of moves made by a piece
+
+        Returns: int
+        """
+        return self._moves_made
+
+    @moves_made.setter
+    def moves_made(self, value) -> None:
+        if isinstance(value, int):
+            self._moves_made = value
+        else:
+            raise TypeError("moves_made must be an integer")
 
     def can_move(self, board, start, end): _abstract()
 

@@ -77,13 +77,13 @@ class King(Piece):
                 return True
         return False
 
-    def risk_check(self, board, end):
+    def risk_check(self, board, x, y) -> bool:
         for row in board.boxes:
             for box in row:
                 if box.piece is None:
                     continue
                 if (box.piece.is_white != self.is_white and
-                        (end.x, end.y) in box.controlled_squares):
+                        (x, y) in box.controlled_squares):
                     return True
         return False
 

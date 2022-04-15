@@ -13,8 +13,8 @@ if __name__ == '__main__':
     pygame.init()
 
     game = Game()
-    white = Human(True)
-    black = Human(False)
+    white = Human(white_side=True)
+    black = Human(white_side=False)
     game.init(black, white)
 
     running = True

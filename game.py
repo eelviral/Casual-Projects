@@ -107,23 +107,9 @@ class Game:
         if start_piece is None:
             return False
 
-        # If king is in check, make sure that the next move gets king out of check
-        if not isinstance(start_piece, King):
-            board = copy.deepcopy(self.board)
-            if start_piece.is_white and board.king_pieces["white"].piece.in_check:
-                board.get_box(move.end.x, move.end.y).piece = move.start.piece
-                board.get_box(move.start.x, move.start.y).piece = None
-                board.update_controlled_squares()
-                king_box = board.king_pieces["white"]
-                if king_box.piece.risk_check(board, king_box):
-                    return False
-            elif (not start_piece.is_white) and board.king_pieces["black"].piece.in_check:
-                board.get_box(move.end.x, move.end.y).piece = move.start.piece
-                board.get_box(move.start.x, move.start.y).piece = None
-                board.update_controlled_squares()
-                king_box = board.king_pieces["black"]
-                if king_box.piece.risk_check(board, king_box):
-                    return False
+        # Make sure next move prevents king from being in check
+        if not isinstance(start_piece, King) and not self.protects_king(move):
+            return False
 
         # Check if its player's turn
         if player != self.current_turn:
@@ -134,6 +120,11 @@ class Game:
         # Check if piece can make this move
         if not start_piece.can_move(self.board, move.start, move.end):
             return False
+        else:
+            # Keep track of moves made by pawn for two step move/en passant or
+            # moves made by rook and king for castling
+            if isinstance(start_piece, (Pawn, King, Rook)):
+                start_piece.moves_made += 1
 
         # Check if a piece is getting captured
         end_piece = move.end.piece
@@ -185,20 +176,11 @@ class Game:
         
         if isinstance(move.end.piece, King):
             if move.end.piece.is_white:
-                self.board.king_pieces["white"] = move.end
+                self.board.king_pieces['white'] = move.end
             else:
-                self.board.king_pieces["black"] = move.end
-        
-        if move.end.piece.is_white:
-            king_box = self.board.king_pieces["black"]
-            if king_box.piece.risk_check(self.board, king_box):
-                king_box.piece.in_check = True
-        else:
-            king_box = self.board.king_pieces["white"]
-            if king_box.piece.risk_check(self.board, king_box):
-                king_box.piece.in_check = True
+                self.board.king_pieces['black'] = move.end
 
-        # Game ends when King is under attack
+        # Game ends when King is captured
         if end_piece is not None and isinstance(end_piece, King):
             if player.is_white_side:
                 self.status = GameStatus.WHITE_WIN
@@ -211,13 +193,26 @@ class Game:
         else:
             self.current_turn = self.players[0]
 
-        if isinstance(start_piece, King):
-            if start_piece.is_white:
-                self.board.king_pieces["white"].piece.in_check = False
-            else:
-                self.board.king_pieces["black"].piece.in_check = False
-
         self.board.update_controlled_squares()
+        return True
+
+    def protects_king(self, move) -> bool:
+        start_piece = move.start.piece
+        board = copy.deepcopy(self.board)
+        if start_piece.is_white:
+            board.get_box(move.end.x, move.end.y).piece = move.start.piece
+            board.get_box(move.start.x, move.start.y).piece = None
+            board.update_controlled_squares()
+            king_box = board.king_pieces['white']
+            if king_box.piece.risk_check(board, king_box.x, king_box.y):
+                return False
+        elif not start_piece.is_white:
+            board.get_box(move.end.x, move.end.y).piece = move.start.piece
+            board.get_box(move.start.x, move.start.y).piece = None
+            board.update_controlled_squares()
+            king_box = board.king_pieces['black']
+            if king_box.piece.risk_check(board, king_box.x, king_box.y):
+                return False
         return True
 
     @staticmethod
