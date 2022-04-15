@@ -40,6 +40,9 @@ class Highlight:
         pygame.draw.rect(screen, self.color, (self.x*SQ_SIZE,
                          self.y*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
+    def __repr__(self):
+        return f'({self.x} {self.y})'
+
 
 class Game:
     players = []
@@ -292,6 +295,6 @@ class Game:
                 if len(self.highlighted_boxes) > 3:
                     self.highlighted_boxes = self.highlighted_boxes[2:]
             else:
-                self.highlighted_boxes = self.highlighted_boxes[:-4]
+                self.highlighted_boxes = self.highlighted_boxes[:-2]
             # Clear move data
             self.move.clear()
