@@ -15,7 +15,17 @@ class Move:
     _end : Spot
         End position of a move
     _piece_moved : Piece
-        The Piece that is moving from start to end
+        The Piece that moved
+    _piece_captured : Piece
+        The Piece that was captured
+    _castling_move : bool
+        If castling move was played
+    _promotion_move : bool
+        If promotion is supposed to occur
+    _en_passant_legal : bool
+        If this move makes en passant legal for the next move
+    _en_passant_move : bool
+        If en passant move was played
     """
 
     def __init__(self, player, start, end):
@@ -27,6 +37,7 @@ class Move:
         self._castling_move = False
         self._promotion_move = False
         self._en_passant_legal = False
+        self._en_passant_move = False
 
     @property
     def player(self) -> Player:
@@ -77,7 +88,7 @@ class Move:
 
     @property
     def castling_move(self) -> bool:
-        """Get or set castling move status
+        """Get or set if castling move was made
 
         Returns: bool
             - True if castling move was played
@@ -126,16 +137,37 @@ class Move:
         else:
             raise TypeError("en_passant_legal must be a boolean")
 
-    def __str__(self):
-        string = f'{self._piece_moved} at ({self._start.x},{self._start.y})'
-        if self._piece_captured is not None:
-            return string + f' captured {self._piece_captured} at ({self._end.x},{self._end.y})'
+    @property
+    def en_passant_move(self):
+        """Get or set if en passant was played
+
+        Returns: bool
+            - True if en passant was played
+            - False if en passant was not played
+        """
+        return self._en_passant_move
+
+    @en_passant_move.setter
+    def en_passant_move(self, value):
+        if type(value) == bool:
+            self._en_passant_move = value
+        else:
+            raise TypeError("en_passant_legal must be a boolean")
+
+    def __repr__(self):
+        string = f'{repr(self.piece_moved)} at ({self.start.x},{self.start.y})'
+        if self.piece_captured is not None:
+            if self.en_passant_move:
+                x = self.end.x - self.start.x
+                string += f' captured {repr(self.piece_captured)} at ({self.end.x - x},{self.end.y}) and'
+            else:
+                return string + f' captured {repr(self.piece_captured)} at ({self.end.x},{self.end.y})'
 
         if self._promotion_move:
-            return string + f'\n{self._piece_moved} promoted!'
+            return string + f'\n{repr(self.piece_moved)} promoted!'
 
         if self._castling_move:
             y = self.end.y - self.start.y
             return string + f" castled {'king' if y < 0 else 'queen'} side"
 
-        return string + f' moved to ({self._end.x},{self._end.y})'
+        return string + f' moved to ({self.end.x},{self.end.y})'
