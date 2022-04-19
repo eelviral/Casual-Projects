@@ -21,8 +21,8 @@ class King(Piece):
         if x == 0 and y == 0:
             return False
 
-        # Can't move if it will put king under attack
-        if self.risk_check(board, end):
+        # Can't move if it will put king in check
+        if self.risk_check(board, end.x, end.y):
             return False
 
         if (x + y) == 1 or (x == 1 and y == 1):
@@ -86,23 +86,6 @@ class King(Piece):
                         (x, y) in box.controlled_squares):
                     return True
         return False
-
-    @property
-    def in_check(self) -> bool:
-        """Get or set if king is in check
-
-        Returns: bool
-            - True if king is in check
-            - False if king is not in check
-        """
-        return self._in_check
-
-    @in_check.setter
-    def in_check(self, value):
-        if type(value) == bool:
-            self._in_check = value
-        else:
-            raise TypeError("in_check must be a boolean")
 
     @property
     def is_castling(self) -> bool:
