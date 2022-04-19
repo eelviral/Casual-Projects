@@ -160,6 +160,7 @@ class Game:
                     self.moves_played[-1].end.y == move.end.y):
                 x = move.end.x - move.start.x
                 self.board.get_box(move.end.x - x, move.end.y).piece = None
+                move.en_passant_move = True
             else:
                 start_piece.en_passant = False
                 return False
@@ -285,7 +286,7 @@ class Game:
                 if box.piece is None:
                     continue
 
-                color, piece = [i.lower() for i in str(box.piece).split()]
+                color, piece = [i.lower() for i in repr(box.piece).split()]
                 if box.piece.is_white:
                     self.screen.blit(IMAGES[color][piece],
                                      (box.y * SQ_SIZE, box.x * SQ_SIZE))

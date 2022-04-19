@@ -4,10 +4,7 @@ from pieces import *
 
 class Board:
     def __init__(self):
-        super().__init__()
         self.boxes = []
-        self._king_pieces = {'white': Spot(0, 0),
-                             'black': Spot(0, 0)}
 
     def get_box(self, x, y) -> Spot:
         if (x < 0 or x > 7) or (y < 0 or y > 7):
@@ -29,19 +26,14 @@ class Board:
         return None, empty_box
 
     def add_first_rank(self, white) -> None:
-        if white:
-            i = 0
-            self._king_pieces['white'] = Spot(i, 3, King(white))
-            king_box = self._king_pieces['white']
-        else:
+        i = 0
+        if not white:
             i = 7
-            self._king_pieces['black'] = Spot(i, 3, King(white))
-            king_box = self._king_pieces['black']
 
         row = [Spot(i, 0, Rook(white)),
                Spot(i, 1, Knight(white)),
                Spot(i, 2, Bishop(white)),
-               king_box,
+               Spot(i, 3, King(white)),
                Spot(i, 4, Queen(white)),
                Spot(i, 5, Bishop(white)),
                Spot(i, 6, Knight(white)),
@@ -101,9 +93,7 @@ class Board:
                         self, box.x, box.y)
                     controlled_squares.extend(box.controlled_squares)
 
-    @property
-    def king_pieces(self) -> dict:
-        """Get or set the two Spots where kings are located
+        return list(set(controlled_squares))
 
         Returns: dict
             {"white": (white king Spot object)
