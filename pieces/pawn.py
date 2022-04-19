@@ -23,6 +23,9 @@ class Pawn(Piece):
             return False
 
         if self.moves_made == 0 and y == 0:
+            if end.piece is not None:
+                return False
+
             if ((self.is_white and x == 2 and start.x == 1) or
                     ((not self.is_white) and x == -2 and start.x == 6)):
                 self.two_step_move = True
@@ -83,6 +86,11 @@ class Pawn(Piece):
     def is_valid_en_passant(self, board, start, end) -> bool:
         x = end.x - start.x
         en_passant_piece = board.get_box(end.x - x, end.y).piece
+
+        # Make sure that en passant only works on another pawn
+        if not isinstance(en_passant_piece, Pawn):
+            return False
+
         if (en_passant_piece is not None and
                 en_passant_piece.two_step_move and
                 en_passant_piece.moves_made == 1 and
