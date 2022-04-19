@@ -14,6 +14,20 @@ class Board:
             raise Exception("Index out of bound.")
         return self.boxes[x][y]
 
+    def get_king_box(self, is_white) -> (King, Spot):
+        empty_box = Spot(0, 0)
+        for row in self.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+
+                if box.piece.is_white != is_white:
+                    continue
+
+                if isinstance(box.piece, King) and box.piece.is_white == is_white:
+                    return box.piece, box
+        return None, empty_box
+
     def add_first_rank(self, white) -> None:
         if white:
             i = 0
@@ -70,6 +84,22 @@ class Board:
                 else:
                     box.controlled_squares = box.piece.controlled_squares(
                         self, box.x, box.y)
+
+    def get_controlled_squares(self, is_white) -> list:
+        controlled_squares = []
+        for row in self.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+
+                if box.piece.is_white and is_white:
+                    box.controlled_squares = box.piece.controlled_squares(
+                        self, box.x, box.y)
+                    controlled_squares.extend(box.controlled_squares)
+                elif (not box.piece.is_white) and (not is_white):
+                    box.controlled_squares = box.piece.controlled_squares(
+                        self, box.x, box.y)
+                    controlled_squares.extend(box.controlled_squares)
 
     @property
     def king_pieces(self) -> dict:

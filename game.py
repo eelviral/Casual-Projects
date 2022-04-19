@@ -108,7 +108,7 @@ class Game:
             return False
 
         # Make sure next move prevents king from being in check
-        if not isinstance(start_piece, King) and not self.protects_king(move):
+        if not isinstance(start_piece, King) and not self.protects_king(move.start, move.end):
             return False
 
         # Check if its player's turn
@@ -173,12 +173,15 @@ class Game:
             self.board, move.end.x, move.end.y)
         move.start.piece = None
         move.start.controlled_squares = None
-        
-        if isinstance(move.end.piece, King):
-            if move.end.piece.is_white:
-                self.board.king_pieces['white'] = move.end
-            else:
-                self.board.king_pieces['black'] = move.end
+
+        # See if this move put opposing king in check and look for checkmate
+        king_piece, king_box = self.board.get_king_box(not self.current_turn.is_white_side)
+        if king_piece.risk_check(self.board, king_box.x, king_box.y):
+            if self.is_checkmate():
+                if player.is_white_side:
+                    self.status = GameStatus.WHITE_WIN
+                else:
+                    self.status = GameStatus.BLACK_WIN
 
         # Game ends when King is captured
         if end_piece is not None and isinstance(end_piece, King):
@@ -196,23 +199,49 @@ class Game:
         self.board.update_controlled_squares()
         return True
 
-    def protects_king(self, move) -> bool:
-        start_piece = move.start.piece
+    def protects_king(self, start, end) -> bool:
+        start_piece = start.piece
         board = copy.deepcopy(self.board)
-        if start_piece.is_white:
-            board.get_box(move.end.x, move.end.y).piece = move.start.piece
-            board.get_box(move.start.x, move.start.y).piece = None
-            board.update_controlled_squares()
-            king_box = board.king_pieces['white']
-            if king_box.piece.risk_check(board, king_box.x, king_box.y):
+        board.get_box(end.x, end.y).piece = start_piece
+        board.get_box(start.x, start.y).piece = None
+        board.update_controlled_squares()
+
+        king_piece, king_box = board.get_king_box(start_piece.is_white)
+        if king_piece.risk_check(board, king_box.x, king_box.y):
+            return False
+        return True
+
+    def is_checkmate(self) -> bool:
+        # Get the squares controlled by the opposing player (the one who checked a king)
+        op_controlled_squares = self.board.get_controlled_squares(self.current_turn.is_white_side)
+
+        # Get the checked king based on current turn (opposite player)
+        king_piece, king_box = self.board.get_king_box(not self.current_turn.is_white_side)
+
+        # If checked king can move to defend itself, there is no checkmate
+        for x, y in king_piece.controlled_squares(self.board, king_box.x, king_box.y):
+            end_box = self.board.get_box(x, y)
+            if (king_box.piece.can_move(self.board, king_box, end_box) and
+                    self.protects_king(king_box, end_box)):
                 return False
-        elif not start_piece.is_white:
-            board.get_box(move.end.x, move.end.y).piece = move.start.piece
-            board.get_box(move.start.x, move.start.y).piece = None
-            board.update_controlled_squares()
-            king_box = board.king_pieces['black']
-            if king_box.piece.risk_check(board, king_box.x, king_box.y):
-                return False
+
+        # Look for a piece that can defend checked king
+        for row in self.board.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+
+                if box.piece.is_white == self.current_turn.is_white_side:
+                    continue
+
+                # If a piece can move to defend checked king, there is no checkmate
+                for x, y in op_controlled_squares:
+                    end_box = self.board.get_box(x, y)
+                    if end_box.piece is not None and end_box.piece.is_white == self.current_turn.is_white_side:
+                        continue
+
+                    if box.piece.can_move(self.board, box, end_box) and self.protects_king(box, end_box):
+                        return False
         return True
 
     @staticmethod
