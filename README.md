@@ -33,11 +33,11 @@ python main.py
 
 ### Program start:
 
-<img src="./images/screenshots/Chess-Game-Start-Screenshot.png" alt="Chess Game Start Window" width="400"/>
+<img src="./images/screenshots/Chess-Game-Start.png" alt="Chess Game Start Window" width="400"/>
 
 ### Opening position:
 
-<img src="./images/screenshots/Chess-Game-Opening-Screenshot.png" alt="Chess Game Opening Moves" width="400"/>
+<img src="./images/screenshots/Chess-Game-Opening.png" alt="Chess Game Opening Window" width="400"/>
 
 ## License
 
