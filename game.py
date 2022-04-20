@@ -275,6 +275,7 @@ class Game:
             for box in self.highlighted_boxes:
                 box.draw(self.screen)
 
+        self.draw_labels()
         self.draw_pieces()
         pygame.display.update()
 
@@ -293,6 +294,24 @@ class Game:
                 else:
                     self.screen.blit(IMAGES[color][piece],
                                      (box.y * SQ_SIZE, box.x * SQ_SIZE))
+
+    def draw_labels(self) -> None:
+        font = pygame.font.SysFont('arial-bold', 23)
+        row = self.board.boxes[-1]
+        for i, letter in enumerate(reversed(range(ord('a'), ord('i')))):
+            if i % 2 == 0:
+                ltr = font.render(chr(letter), True, self.white)
+            else:
+                ltr = font.render(chr(letter), True, self.black)
+            self.screen.blit(ltr, ((row[i].y + 3.40/4) * SQ_SIZE, (row[i].x + 2.9/4) * SQ_SIZE))
+
+        col = [row[0] for row in self.board.boxes]
+        for i in range(8):
+            if i % 2 == 0:
+                num = font.render(str(i+1), True, self.black)
+            else:
+                num = font.render(str(i+1), True, self.white)
+            self.screen.blit(num, (col[i].y * SQ_SIZE + SQ_SIZE * 1 / 20, col[i].x * SQ_SIZE + SQ_SIZE * 1 / 20))
 
     def mouse_click(self, pos) -> None:
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
