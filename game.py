@@ -148,6 +148,7 @@ class Game:
 
             rook_end.piece = rook_start.piece
             rook_start.piece = None
+            start_piece.is_castling = False
 
         # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
         if (start_piece is not None and isinstance(start_piece, Pawn)
@@ -174,7 +175,8 @@ class Game:
             self.board, move.end.x, move.end.y)
         move.start.piece = None
         move.start.controlled_squares = None
-
+        self.board.update_controlled_squares()
+        
         # See if this move put opposing king in check and look for checkmate
         king_piece, king_box = self.board.get_king_box(not self.current_turn.is_white_side)
         if king_piece.risk_check(self.board, king_box.x, king_box.y):
