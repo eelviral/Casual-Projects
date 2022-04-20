@@ -95,24 +95,8 @@ class Board:
 
         return list(set(controlled_squares))
 
-        Returns: dict
-            {"white": (white king Spot object)
-             "black": (black king Spot object)}
-        """
-        return self._king_pieces
-
-    @king_pieces.setter
-    def king_pieces(self, value) -> None:
-        if isinstance(value, Spot):
-            if value.piece is not None and isinstance(value.piece, King):
-                if value.piece.is_white:
-                    self._king_pieces['white'] = value
-                else:
-                    self._king_pieces['black'] = value
-            else:
-                raise TypeError("piece attribute of Spot must be a King")
-        else:
-            raise TypeError("value of a key in king_pieces must be a Spot")
+    def __repr__(self):
+        return '\n'.join(map(repr, [[repr(spot) for spot in box] for box in self.boxes]))
 
     def __str__(self):
-        return str([[str(piece) for piece in box] for box in self.boxes])
+        return '\n'.join(map(str, [[str(spot) for spot in box] for box in self.boxes]))

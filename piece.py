@@ -80,11 +80,27 @@ class Piece:
 
     def controlled_squares(self, board, x, y): _abstract()
 
-    def __str__(self):
-        if self._is_white:
+    def __repr__(self):
+        if self.is_white:
             return f"White {type(self).__name__}"
         else:
             return f"Black {type(self).__name__}"
+
+    def __str__(self):
+        piece_symbols = {
+            'Bishop': 'B',
+            'King': 'K',
+            'Knight': 'N',
+            'Pawn': 'P',
+            'Queen': 'Q',
+            'Rook': 'R'
+        }
+        if self.is_white:
+            color = 'w'
+        else:
+            color = 'b'
+
+        return color + piece_symbols.get(type(self).__name__.lower().capitalize())
 
 
 def _abstract():

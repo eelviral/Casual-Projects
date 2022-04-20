@@ -86,5 +86,10 @@ class Spot:
         else:
             raise TypeError("y must be an int")
 
+    def __repr__(self):
+        return f'{repr(self.piece)} {self.x} {self.y}'
+
     def __str__(self):
-        return f"{self._piece} {self._x} {self._y}"
+        if self.piece is None:
+            return '  '
+        return str(self.piece)
