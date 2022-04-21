@@ -31,9 +31,11 @@ if __name__ == '__main__':
                 game.mouse_click(event.pos)
         game.draw_board()
 
-        if game.status == GameStatus.BLACK_WIN:
-            print("Black Wins!")
-            running = False
-        elif game.status == GameStatus.WHITE_WIN:
-            print("White Wins!")
+        if game.status != GameStatus.ACTIVE:
+            if game.status == GameStatus.BLACK_WIN:
+                print("Black Wins!")
+            elif game.status == GameStatus.WHITE_WIN:
+                print("White Wins!")
+            elif game.status == GameStatus.STALEMATE:
+                print("Stalemate!")
             running = False

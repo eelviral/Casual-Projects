@@ -59,7 +59,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.length, self.width))
         pygame.display.set_caption('Chess Game')
         self.load_images()
-        self._status = None
+        self._status = GameStatus.ACTIVE
 
     def init(self, p1, p2):
         if len(self.players) == 0:
@@ -80,7 +80,7 @@ class Game:
         self.moves_played.clear()
 
     @property
-    def status(self) -> bool:
+    def status(self) -> int:
         """Get or set the GameStatus
 
         Returns: bool
