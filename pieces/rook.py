@@ -57,9 +57,8 @@ class Rook(Piece):
 
     def controlled_squares(self, board, x, y) -> list:
         squares = []
-        current_spot = board.get_box(x, y)
         for i in [-1, 1]:
-            for j in range(i, 7 * i, i):
+            for j in range(i, 8 * i, i):
                 next_y = y + j
                 if next_y < 0 or next_y > 7:
                     break
@@ -68,15 +67,14 @@ class Rook(Piece):
                 if next_spot.piece is None:
                     squares.append((x, next_y))
                 else:
-                    if next_spot.piece.is_white != current_spot.piece.is_white:
-                        if isinstance(next_spot.piece, King):
-                            squares.append((x, next_y))
-                            continue
-                        else:
-                            squares.append((x, next_y))
+                    if isinstance(next_spot.piece, King):
+                        squares.append((x, next_y))
+                        continue
+                    else:
+                        squares.append((x, next_y))
                     break
 
-            for j in range(i, 7 * i, i):
+            for j in range(i, 8 * i, i):
                 next_x = x + j
                 if next_x < 0 or next_x > 7:
                     break
@@ -85,11 +83,10 @@ class Rook(Piece):
                 if next_spot.piece is None:
                     squares.append((next_x, y))
                 else:
-                    if next_spot.piece.is_white != current_spot.piece.is_white:
-                        if isinstance(next_spot.piece, King):
-                            squares.append((next_x, y))
-                            continue
-                        else:
-                            squares.append((next_x, y))
+                    if isinstance(next_spot.piece, King):
+                        squares.append((next_x, y))
+                        continue
+                    else:
+                        squares.append((next_x, y))
                     break
         return squares

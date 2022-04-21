@@ -54,7 +54,6 @@ class Pawn(Piece):
 
     def controlled_squares(self, board, x, y) -> list:
         squares = []
-        current_spot = board.get_box(x, y)
         if self.is_white:
             x_vector = 1
         else:
@@ -65,14 +64,7 @@ class Pawn(Piece):
             next_y = y + y_vector
             if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
                 continue
-
-            next_spot = board.get_box(next_x, next_y)
-            if next_spot.piece is None:
-                squares.append((next_x, next_y))
-            else:
-                if next_spot.piece.is_white != current_spot.piece.is_white:
-                    squares.append((next_x, next_y))
-                continue
+            squares.append((next_x, next_y))
         return squares
 
     def is_valid_promotion(self, start, end) -> bool:

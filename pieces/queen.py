@@ -21,5 +21,4 @@ class Queen(Piece):
     def controlled_squares(self, board, x, y) -> list:
         rook_squares = self.rook.controlled_squares(board, x, y)
         bishop_squares = self.bishop.controlled_squares(board, x, y)
-
         return rook_squares + bishop_squares

@@ -30,19 +30,11 @@ class Knight(Piece):
 
     def controlled_squares(self, board, x, y) -> list:
         squares = []
-        current_spot = board.get_box(x, y)
         knight_moves = list(product((-2, 2), (-1, 1))) + list(product((-1, 1), (-2, 2)))
         for vector in knight_moves:
             next_x = x + vector[0]
             next_y = y + vector[1]
             if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
                 continue
-
-            next_spot = board.get_box(next_x, next_y)
-            if next_spot.piece is None:
-                squares.append((next_x, next_y))
-            else:
-                if next_spot.piece.is_white != current_spot.piece.is_white:
-                    squares.append((next_x, next_y))
-                continue
+            squares.append((next_x, next_y))
         return squares

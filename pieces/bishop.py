@@ -51,10 +51,9 @@ class Bishop(Piece):
 
     def controlled_squares(self, board, x, y):
         squares = []
-        current_spot = board.get_box(x, y)
         for vector in product((-1, 1), (-1, 1)):
             i, j = vector[0], vector[1]
-            for k in range(i, 7 * i, i):
+            for k in range(i, 8 * i, i):
                 next_x = x + k
                 next_y = y + j * k
                 if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
@@ -64,11 +63,10 @@ class Bishop(Piece):
                 if next_spot.piece is None:
                     squares.append((next_x, next_y))
                 else:
-                    if next_spot.piece.is_white != current_spot.piece.is_white:
-                        if isinstance(next_spot.piece, King):
-                            squares.append((next_x, next_y))
-                            continue
-                        else:
-                            squares.append((next_x, next_y))
+                    if isinstance(next_spot.piece, King):
+                        squares.append((next_x, next_y))
+                        continue
+                    else:
+                        squares.append((next_x, next_y))
                     break
         return squares
