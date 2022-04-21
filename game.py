@@ -185,6 +185,9 @@ class Game:
                     self.status = GameStatus.WHITE_WIN
                 else:
                     self.status = GameStatus.BLACK_WIN
+        else:
+            if self.is_stalemate():
+                self.status = GameStatus.STALEMATE
 
         # Game ends when King is captured
         if end_piece is not None and isinstance(end_piece, King):
@@ -245,6 +248,35 @@ class Game:
 
                     if box.piece.can_move(self.board, box, end_box) and self.protects_king(box, end_box):
                         return False
+        return True
+
+    def is_stalemate(self):
+        piece_count = 0
+        king_count = 0
+        for row in self.board.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+                else:
+                    if isinstance(box.piece, King):
+                        king_count += 1
+                    piece_count += 1
+
+        # If only two kings remain, its a stalemate
+        if piece_count == 2 and king_count == 2:
+            return True
+
+        # Check if pieces can still make legal moves
+        for row in self.board.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+
+                if box.piece.is_white == self.current_turn.is_white_side:
+                    continue
+
+                if len(box.piece.legal_moves(self.board, box.x, box.y)) > 0:
+                    return False
         return True
 
     @staticmethod
