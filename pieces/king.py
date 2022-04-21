@@ -1,4 +1,4 @@
-from piece import Piece, override
+from piece import Piece
 from itertools import product
 
 
@@ -8,7 +8,6 @@ class King(Piece):
         self._in_check = False
         self._is_castling = False
 
-    @override(Piece)
     def can_move(self, board, start, end) -> bool:
         """
         Determines if king can currently move to marked position

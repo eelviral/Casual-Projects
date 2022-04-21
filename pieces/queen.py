@@ -1,4 +1,4 @@
-from piece import Piece, override
+from piece import Piece
 from .rook import Rook
 from .bishop import Bishop
 
@@ -9,7 +9,6 @@ class Queen(Piece):
         self.rook = Rook(white)
         self.bishop = Bishop(white)
 
-    @override(Piece)
     def can_move(self, board, start, end) -> bool:
         """
         Determines if queen can currently move to marked position
@@ -19,7 +18,6 @@ class Queen(Piece):
             return True
         return False
 
-    @override(Piece)
     def controlled_squares(self, board, x, y) -> list:
         rook_squares = self.rook.controlled_squares(board, x, y)
         bishop_squares = self.bishop.controlled_squares(board, x, y)

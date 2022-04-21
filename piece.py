@@ -1,3 +1,6 @@
+from abc import abstractmethod
+
+
 class Piece:
     """A parent class used to represent a Piece on a chessboard
 
@@ -76,7 +79,25 @@ class Piece:
         else:
             raise TypeError("moves_made must be an integer")
 
-    def can_move(self, board, start, end): _abstract()
+    @abstractmethod
+    def can_move(self, board, start, end) -> bool:
+        """Checks if this piece can move to a square based on its current location
+
+        :param board: Chess board (2D array of Spot objects)
+        :param start: The current square (Spot)
+        :param end: The next square (Spot)
+        :return: bool
+        """
+
+    @abstractmethod
+    def controlled_squares(self, board, x, y) -> list:
+        """Get the list of squares controlled by this piece
+
+        :param board: Chess board (2D array of Spot objects)
+        :param x: The x-coordinate/row this piece is located (int)
+        :param y: The y-coordinate/column this piece is located (int)
+        :return: list
+        """
 
     def controlled_squares(self, board, x, y): _abstract()
 
@@ -101,14 +122,3 @@ class Piece:
             color = 'b'
 
         return color + piece_symbols.get(type(self).__name__.lower().capitalize())
-
-
-def _abstract():
-    raise NotImplementedError
-
-
-def override(interface_class):
-    def overrider(method):
-        assert(method.__name__ in dir(interface_class))
-        return method
-    return overrider

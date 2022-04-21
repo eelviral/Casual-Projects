@@ -1,4 +1,4 @@
-from piece import Piece, override
+from piece import Piece
 
 
 class Pawn(Piece):
@@ -9,7 +9,6 @@ class Pawn(Piece):
         self._moves_made = 0
         self._en_passant = False
 
-    @override(Piece)
     def can_move(self, board, start, end) -> bool:
         """
         Determines if pawn can currently move to marked position
@@ -53,7 +52,6 @@ class Pawn(Piece):
                 return True
         return self.is_valid_promotion(start, end)
 
-    @override(Piece)
     def controlled_squares(self, board, x, y) -> list:
         squares = []
         current_spot = board.get_box(x, y)

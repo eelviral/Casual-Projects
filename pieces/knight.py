@@ -1,4 +1,4 @@
-from piece import Piece, override
+from piece import Piece
 from itertools import product
 
 
@@ -6,7 +6,6 @@ class Knight(Piece):
     def __init__(self, white):
         super().__init__(white)
 
-    @override(Piece)
     def can_move(self, board, start, end) -> bool:
         """
         Determines if knight can currently move to marked position
@@ -29,7 +28,6 @@ class Knight(Piece):
                 return True
         return False
 
-    @override(Piece)
     def controlled_squares(self, board, x, y) -> list:
         squares = []
         current_spot = board.get_box(x, y)

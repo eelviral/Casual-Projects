@@ -1,4 +1,4 @@
-from piece import Piece, override
+from piece import Piece
 from .king import King
 from itertools import product
 
@@ -7,7 +7,6 @@ class Bishop(Piece):
     def __init__(self, white):
         super().__init__(white)
 
-    @override(Piece)
     def can_move(self, board, start, end) -> bool:
         """
         Determines if bishop can currently move to marked position
@@ -50,7 +49,6 @@ class Bishop(Piece):
                 return True
         return False
 
-    @override(Piece)
     def controlled_squares(self, board, x, y):
         squares = []
         current_spot = board.get_box(x, y)
