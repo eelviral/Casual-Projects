@@ -22,3 +22,8 @@ class Queen(Piece):
         rook_squares = self.rook.controlled_squares(board, x, y)
         bishop_squares = self.bishop.controlled_squares(board, x, y)
         return rook_squares + bishop_squares
+
+    def legal_moves(self, board, x, y) -> list:
+        rook_moves = self.rook.legal_moves(board, x, y)
+        bishop_moves = self.bishop.legal_moves(board, x, y)
+        return rook_moves + bishop_moves

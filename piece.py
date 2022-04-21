@@ -99,7 +99,15 @@ class Piece:
         :return: list
         """
 
-    def controlled_squares(self, board, x, y): _abstract()
+    @abstractmethod
+    def legal_moves(self, board, x, y) -> list:
+        """Get the list of legal moves for this piece
+
+        :param board: Chess board (2D array of Spot objects)
+        :param x: The x-coordinate/row this piece is located (int)
+        :param y: The y-coordinate/column this piece is located (int)
+        :return: list
+        """
 
     def __repr__(self):
         if self.is_white:

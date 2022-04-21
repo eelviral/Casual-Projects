@@ -47,6 +47,26 @@ class King(Piece):
             squares.append((next_x, next_y))
         return squares
 
+    def legal_moves(self, board, x, y) -> list:
+        moves = []
+        current_spot = board.get_box(x, y)
+        for vector in product((0, -1, 1), (0, -1, 1)):
+            next_x = x + vector[0]
+            next_y = y + vector[1]
+            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
+                continue
+
+            next_spot = board.get_box(next_x, next_y)
+            if next_spot.piece is None:
+                if not self.risk_check(board, next_x, next_y):
+                    moves.append((next_x, next_y))
+            else:
+                if (next_spot.piece.is_white != current_spot.piece.is_white and
+                        not self.risk_check(board, next_x, next_y)):
+                    moves.append((next_x, next_y))
+                continue
+        return moves
+
     def is_valid_castle(self, board, start, end) -> bool:
         if self.moves_made > 0:
             return False

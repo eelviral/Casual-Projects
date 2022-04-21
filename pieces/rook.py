@@ -90,3 +90,42 @@ class Rook(Piece):
                         squares.append((next_x, y))
                     break
         return squares
+
+    def legal_moves(self, board, x, y) -> list:
+        moves = []
+        current_spot = board.get_box(x, y)
+        for i in [-1, 1]:
+            for j in range(i, 8 * i, i):
+                next_y = y + j
+                if next_y < 0 or next_y > 7:
+                    break
+
+                next_spot = board.get_box(x, next_y)
+                if next_spot.piece is None:
+                    moves.append((x, next_y))
+                else:
+                    if next_spot.piece.is_white != current_spot.piece.is_white:
+                        if isinstance(next_spot.piece, King):
+                            moves.append((x, next_y))
+                            continue
+                        else:
+                            moves.append((x, next_y))
+                    break
+
+            for j in range(i, 8 * i, i):
+                next_x = x + j
+                if next_x < 0 or next_x > 7:
+                    break
+
+                next_spot = board.get_box(next_x, y)
+                if next_spot.piece is None:
+                    moves.append((next_x, y))
+                else:
+                    if next_spot.piece.is_white != current_spot.piece.is_white:
+                        if isinstance(next_spot.piece, King):
+                            moves.append((next_x, y))
+                            continue
+                        else:
+                            moves.append((next_x, y))
+                    break
+        return moves
