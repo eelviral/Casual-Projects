@@ -56,6 +56,8 @@ class Game:
         self.length = self.width = WIDTH
         self.black = (77, 50, 34)
         self.white = (222, 184, 135)
+        icon = pygame.image.load('./images/ico/chess-icon.png')
+        pygame.display.set_icon(icon)
         self.screen = pygame.display.set_mode((self.length, self.width))
         pygame.display.set_caption('Chess Game')
         self.load_images()
