@@ -2,12 +2,13 @@ from piece import Piece
 
 
 class Pawn(Piece):
-    def __init__(self, white):
+    def __init__(self, white, at_top_of_board):
         super().__init__(white)
         self._is_promoted = False
         self._two_step_move = False
         self._moves_made = 0
         self._en_passant = False
+        self.top_spawned = at_top_of_board
 
     def can_move(self, board, start, end) -> bool:
         """
@@ -25,13 +26,13 @@ class Pawn(Piece):
             if end.piece is not None:
                 return False
 
-            if ((self.is_white and x == 2 and start.x == 1) or
-                    ((not self.is_white) and x == -2 and start.x == 6)):
+            if ((self.top_spawned and x == 2 and start.x == 1) or
+                    ((not self.top_spawned) and x == -2 and start.x == 6)):
                 self.two_step_move = True
                 return True
 
-        if not ((self.is_white and x == 1) or
-                (not self.is_white) and x == -1):
+        if not ((self.top_spawned and x == 1) or
+                (not self.top_spawned) and x == -1):
             return False
 
         if y == 0:
@@ -54,7 +55,7 @@ class Pawn(Piece):
 
     def controlled_squares(self, board, x, y) -> list:
         squares = []
-        if self.is_white:
+        if self.top_spawned:
             x_vector = 1
         else:
             x_vector = -1
@@ -70,7 +71,7 @@ class Pawn(Piece):
     def legal_moves(self, board, x, y) -> list:
         moves = []
         current_spot = board.get_box(x, y)
-        if self.is_white:
+        if self.top_spawned:
             x_vector = 1
         else:
             x_vector = -1
@@ -106,8 +107,8 @@ class Pawn(Piece):
         return moves
 
     def is_valid_promotion(self, start, end) -> bool:
-        if ((self.is_white and start.x == 6 and end.x == 8) or
-                ((not self.is_white) and start.x == 1 and end.x == 0)):
+        if ((self.top_spawned and start.x == 6 and end.x == 8) or
+                ((not self.top_spawned) and start.x == 1 and end.x == 0)):
             return True
         return False
 

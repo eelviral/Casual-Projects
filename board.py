@@ -5,6 +5,7 @@ from pieces import *
 class Board:
     def __init__(self):
         self.boxes = []
+        self.white_top_spawn = False
 
     def get_box(self, x, y) -> Spot:
         if (x < 0 or x > 7) or (y < 0 or y > 7):
@@ -25,45 +26,51 @@ class Board:
                     return box.piece, box
         return None, empty_box
 
-    def add_first_rank(self, white) -> None:
-        i = 0
-        if not white:
-            i = 7
-
-        row = [Spot(i, 0, Rook(white)),
-               Spot(i, 1, Knight(white)),
-               Spot(i, 2, Bishop(white)),
-               Spot(i, 3, King(white)),
-               Spot(i, 4, Queen(white)),
-               Spot(i, 5, Bishop(white)),
-               Spot(i, 6, Knight(white)),
-               Spot(i, 7, Rook(white))]
+    def add_first_rank(self, white, rank) -> None:
+        row = [Spot(rank, 0, Rook(white)),
+               Spot(rank, 1, Knight(white)),
+               Spot(rank, 2, Bishop(white))]
+        if (rank == 0 and white) or (rank == 7 and not white):
+            row += [Spot(rank, 3, King(white)),
+                    Spot(rank, 4, Queen(white))]
+        elif (rank == 0 and not white) or (rank == 7 and white):
+            row += [Spot(rank, 3, Queen(white)),
+                    Spot(rank, 4, King(white))]
+        row += [Spot(rank, 5, Bishop(white)),
+                Spot(rank, 6, Knight(white)),
+                Spot(rank, 7, Rook(white))]
 
         self.boxes.append(row)
 
-    def add_pawns(self, white) -> None:
-        i = 1
-        if not white:
-            i = 6
-
-        self.boxes.append([Spot(i, j, Pawn(white))
+    def add_pawns(self, white, rank) -> None:
+        if rank == 1:
+            white_top_spawn = True
+        else:
+            white_top_spawn = False
+        self.boxes.append([Spot(rank, j, Pawn(white, white_top_spawn))
                           for j in range(8)])
 
     def reset_board(self) -> None:
         """
         Initialize/reset position of black and white pieces
         """
-        # Add white pieces
-        self.add_first_rank(True)
-        self.add_pawns(True)
+        if self.white_top_spawn:
+            self.add_first_rank(True, 0)
+            self.add_pawns(True, 1)
+        else:
+            self.add_first_rank(False, 0)
+            self.add_pawns(False, 1)
 
         # Add empty boxes by marking them as None
         self.boxes.extend([[Spot(i, j, None) for j in range(0, 8)]
                           for i in range(2, 6)])
 
-        # Add black pieces
-        self.add_pawns(False)
-        self.add_first_rank(False)
+        if self.white_top_spawn:
+            self.add_pawns(False, 6)
+            self.add_first_rank(False, 7)
+        else:
+            self.add_pawns(True, 6)
+            self.add_first_rank(True, 7)
 
     def update_controlled_squares(self) -> None:
         for row in self.boxes:

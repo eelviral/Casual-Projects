@@ -334,16 +334,23 @@ class Game:
     def draw_labels(self) -> None:
         font = pygame.font.SysFont('arial-bold', 23)
         row = self.board.boxes[-1]
-        for i, letter in enumerate(reversed(range(ord('a'), ord('i')))):
+        if self.board.white_top_spawn:
+            letter_range = reversed(range(ord('a'), ord('i')))
+        else:
+            letter_range = range(ord('a'), ord('i'))
+        for i, letter in enumerate(letter_range):
             if i % 2 == 0:
                 ltr = font.render(chr(letter), True, self.white)
             else:
                 ltr = font.render(chr(letter), True, self.black)
             self.screen.blit(ltr, ((row[i].y + 3.40/4) * SQ_SIZE, (row[i].x + 2.9/4) * SQ_SIZE))
 
-        col = [row[0] for row in self.board.boxes]
+        if self.board.white_top_spawn:
+            col = [row[0] for row in self.board.boxes]
+        else:
+            col = [row[0] for row in self.board.boxes][::-1]
         for i in range(8):
-            if i % 2 == 0:
+            if (i % 2 == 0 and self.board.white_top_spawn) or (i % 2 != 0 and not self.board.white_top_spawn):
                 num = font.render(str(i+1), True, self.black)
             else:
                 num = font.render(str(i+1), True, self.white)
