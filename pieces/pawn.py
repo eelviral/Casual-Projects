@@ -26,6 +26,7 @@ class Pawn(Piece):
             if end.piece is not None:
                 return False
 
+            # If pawn moves two squares
             if ((self.top_spawned and x == 2 and start.x == 1) or
                     ((not self.top_spawned) and x == -2 and start.x == 6)):
                 self.two_step_move = True
@@ -38,6 +39,7 @@ class Pawn(Piece):
         if y == 0:
             # If end position is empty, move
             if end.piece is None:
+                self.is_valid_promotion(start, end)
                 return True
             else:
                 return False
@@ -50,8 +52,9 @@ class Pawn(Piece):
             if end.piece.is_white == self.is_white:
                 return False
             else:
+                self.is_valid_promotion(start, end)
                 return True
-        return self.is_valid_promotion(start, end)
+        self.is_valid_promotion(start, end)
 
     def controlled_squares(self, board, x, y) -> list:
         squares = []
@@ -106,11 +109,12 @@ class Pawn(Piece):
                 continue
         return moves
 
-    def is_valid_promotion(self, start, end) -> bool:
-        if ((self.top_spawned and start.x == 6 and end.x == 8) or
+    def is_valid_promotion(self, start, end) -> None:
+        if ((self.top_spawned and start.x == 6 and end.x == 7) or
                 ((not self.top_spawned) and start.x == 1 and end.x == 0)):
-            return True
-        return False
+            self.is_promoted = True
+        else:
+            self.is_promoted = False
 
     def is_valid_en_passant(self, board, start, end) -> bool:
         x = end.x - start.x

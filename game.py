@@ -1,7 +1,8 @@
 import pygame
 from board import Board
 from move import Move
-from pieces import King, Pawn, Rook
+from pieces import King, Pawn, Rook, Queen, Bishop, Knight
+from spot import Spot
 import math
 import copy
 
@@ -62,6 +63,8 @@ class Game:
         pygame.display.set_caption('Chess Game')
         self.load_images()
         self._status = GameStatus.ACTIVE
+        self.promotion = False
+        self.promotion_pieces = []
 
     def init(self, p1, p2):
         if len(self.players) == 0:
@@ -313,6 +316,10 @@ class Game:
 
         self.draw_labels()
         self.draw_pieces()
+
+        if self.promotion:
+            last_move = self.moves_played[-1]
+            self.draw_promotion_options(last_move.end.x, last_move.end.y, last_move.piece_moved.is_white)
         pygame.display.update()
 
     def draw_pieces(self) -> None:
@@ -356,8 +363,46 @@ class Game:
                 num = font.render(str(i+1), True, self.white)
             self.screen.blit(num, (col[i].y * SQ_SIZE + SQ_SIZE * 1 / 20, col[i].x * SQ_SIZE + SQ_SIZE * 1 / 20))
 
+    def draw_promotion_options(self, x, y, is_white):
+        color = 'white' if is_white else 'black'
+        promotion_images = [IMAGES[color]['queen'],
+                            IMAGES[color]['rook'],
+                            IMAGES[color]['bishop'],
+                            IMAGES[color]['knight']]
+
+        promotion_pieces = [Queen(is_white),
+                            Rook(is_white),
+                            Bishop(is_white),
+                            Knight(is_white)]
+        vector = 1 if x == 0 else -1
+        for i in range(0, 4*vector, vector):
+            pygame.draw.rect(self.screen, (255, 255, 255), (y * SQ_SIZE, (x + i) * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+            self.screen.blit(promotion_images[abs(i)], (y * SQ_SIZE, (x + i) * SQ_SIZE))
+
+            if len(self.promotion_pieces) < 4:
+                self.promotion_pieces.append(Spot((x + i), y, promotion_pieces[abs(i)]))
+
     def mouse_click(self, pos) -> None:
+        """
+        Chess Game's response to mouse click events
+
+        :param pos: cursor position inside Chess Game window
+        :return: None
+        """
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
+        if mouse_x > 7 or mouse_y > 7:
+            return
+
+        # Promotion
+        if len(self.moves_played) > 0 and self.moves_played[-1].promotion_move and len(self.promotion_pieces) == 4:
+            last_move = self.moves_played[-1]
+            for spot in self.promotion_pieces:
+                if spot.x == mouse_y and spot.y == mouse_x:
+                    last_move.end.piece = spot.piece
+                    self.promotion_pieces = []
+                    self.promotion = False
+            return
+
         selected_piece = self.board.get_box(mouse_y, mouse_x).piece
 
         # If a start piece has not been chosen
