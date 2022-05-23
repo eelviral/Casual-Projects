@@ -1,7 +1,7 @@
 import pygame
 from board import Board
 from move import Move
-from pieces import King, Pawn, Rook, Queen, Bishop, Knight
+from pieces import *
 from spot import Spot
 import math
 import copy
@@ -9,6 +9,7 @@ import copy
 WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
+UI_SIZE = 300
 IMAGES = {'white': {},
           'black': {}}
 
@@ -156,9 +157,12 @@ class Game:
             start_piece.is_castling = False
 
         # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
-        if (start_piece is not None and isinstance(start_piece, Pawn)
-                and start_piece.moves_made == 1 and start_piece.two_step_move):
-            move.en_passant_legal = True
+        if start_piece is not None and isinstance(start_piece, Pawn):
+            if start_piece.moves_made == 1 and start_piece.two_step_move:
+                move.en_passant_legal = True
+            elif start_piece.is_promoted:
+                move.promotion_move = True
+                self.promotion = True
 
         # Check if a pawn moved two ranks to perform en passant move
         if isinstance(start_piece, Pawn) and start_piece.en_passant:
@@ -300,13 +304,19 @@ class Game:
         """
         size = SQ_SIZE
         count = 0
-        self.screen.fill(self.black)
         for i in range(self.length + 1):
+            columns = 0
             for j in range(self.length):
                 if count % 2 == 0:
                     pygame.draw.rect(self.screen, self.white, [
                         size * j, size * i, size, size])
+                else:
+                    pygame.draw.rect(self.screen, self.black, [
+                        size * j, size * i, size, size])
+                columns += 1
                 count += 1
+                if columns >= 8:
+                    break
             count -= 1
 
         # Add highlighted boxes
