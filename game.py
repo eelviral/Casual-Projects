@@ -171,6 +171,7 @@ class Game:
                 x = move.end.x - move.start.x
                 self.board.get_box(move.end.x - x, move.end.y).piece = None
                 move.en_passant_move = True
+                start_piece.en_passant = False
             else:
                 start_piece.en_passant = False
                 return False
