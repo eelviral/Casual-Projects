@@ -9,7 +9,7 @@ import copy
 WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
-UI_SIZE = 300
+UI_SIZE = 0
 IMAGES = {'white': {},
           'black': {}}
 
@@ -60,7 +60,7 @@ class Game:
         self.white = (222, 184, 135)
         icon = pygame.image.load('./images/ico/chess-icon.png')
         pygame.display.set_icon(icon)
-        self.screen = pygame.display.set_mode((self.length, self.width))
+        self.screen = pygame.display.set_mode((self.length + UI_SIZE, self.width))
         pygame.display.set_caption('Chess Game')
         self.load_images()
         self._status = GameStatus.ACTIVE
