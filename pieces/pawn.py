@@ -79,6 +79,8 @@ class Pawn(Piece):
         else:
             x_vector = -1
 
+        # Vertical movement
+        # Two step move
         if self.moves_made == 0:
             for i in range(x_vector, 2 * x_vector, x_vector):
                 next_x = x + i
@@ -87,6 +89,7 @@ class Pawn(Piece):
                 next_spot = board.get_box(next_x, y)
                 if next_spot.piece is None:
                     moves.append((next_x, y))
+        # One step move
         else:
             next_x = x + x_vector
             if 0 <= next_x <= 7:
@@ -94,6 +97,7 @@ class Pawn(Piece):
                 if next_spot.piece is None:
                     moves.append((next_x, y))
 
+        # Diagonal movement
         next_x = x + x_vector
         for y_vector in [-1, 1]:
             next_y = y + y_vector
@@ -101,12 +105,8 @@ class Pawn(Piece):
                 continue
 
             next_spot = board.get_box(next_x, next_y)
-            if next_spot.piece is None:
+            if self.can_move(board, current_spot, next_spot):
                 moves.append((next_x, next_y))
-            else:
-                if next_spot.piece.is_white != current_spot.piece.is_white:
-                    moves.append((next_x, next_y))
-                continue
         return moves
 
     def is_valid_promotion(self, start, end) -> None:
