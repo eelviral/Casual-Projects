@@ -1,6 +1,7 @@
 import pygame
 from board import Board
 from move import Move
+from player import Player
 from pieces import *
 from spot import Spot
 import math
@@ -49,7 +50,6 @@ class Highlight:
 class Game:
     players = []
     board = Board()
-    current_turn = None
     move = []
     highlighted_boxes = []
     moves_played = []
@@ -63,6 +63,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.length + UI_SIZE, self.width))
         pygame.display.set_caption('Chess Game')
         self.load_images()
+        self._current_turn = None
         self._status = GameStatus.ACTIVE
         self.promotion = False
         self.promotion_pieces = []
@@ -89,13 +90,25 @@ class Game:
     def status(self) -> int:
         """Get or set the GameStatus
 
-        Returns: bool
+        :return: bool
         """
         return self._status
 
     @status.setter
     def status(self, value) -> None:
         self._status = value
+
+    @property
+    def current_turn(self) -> Player:
+        """Get or set the current player turn
+
+        :return: Player
+        """
+        return self._current_turn
+
+    @current_turn.setter
+    def current_turn(self, value) -> None:
+        self._current_turn = value
 
     def player_move(self, player, start_x, start_y, end_x, end_y) -> bool:
         start_box = self.board.get_box(start_x, start_y)
@@ -393,6 +406,22 @@ class Game:
             if len(self.promotion_pieces) < 4:
                 self.promotion_pieces.append(Spot((x + i), y, promotion_pieces[abs(i)]))
 
+    def get_current_legal_moves(self) -> list:
+        legal_moves = []
+        for row in self.board.boxes:
+            for box in row:
+                if box.piece is None:
+                    continue
+
+                if box.piece.is_white != self.current_turn.is_white_side:
+                    continue
+
+                piece_legal_moves = box.piece.legal_moves(self.board, box.x, box.y)
+                if len(piece_legal_moves) > 0:
+                    for move in piece_legal_moves:
+                        legal_moves.append([[box.x, box.y], move])
+        return legal_moves
+
     def mouse_click(self, pos) -> None:
         """
         Chess Game's response to mouse click events
@@ -401,39 +430,42 @@ class Game:
         :return: None
         """
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
-        if mouse_x > 7 or mouse_y > 7:
+        self.move_action(mouse_x, mouse_y)
+
+    def move_action(self, move_x, move_y):
+        if move_x > 7 or move_y > 7:
             return
 
         # Promotion
         if len(self.moves_played) > 0 and self.moves_played[-1].promotion_move and len(self.promotion_pieces) == 4:
             last_move = self.moves_played[-1]
             for spot in self.promotion_pieces:
-                if spot.x == mouse_y and spot.y == mouse_x:
+                if spot.x == move_y and spot.y == move_x:
                     last_move.end.piece = spot.piece
                     self.promotion_pieces = []
                     self.promotion = False
             return
 
-        selected_piece = self.board.get_box(mouse_y, mouse_x).piece
+        selected_piece = self.board.get_box(move_y, move_x).piece
 
         # If a start piece has not been chosen
         if len(self.move) == 0:
             # Add start piece to move data if spot is not empty
             if selected_piece is not None and selected_piece.is_white == self.current_turn.is_white_side:
-                self.move.append((mouse_x, mouse_y))
-                self.highlighted_boxes.append(Highlight(mouse_x, mouse_y))
+                self.move.append((move_x, move_y))
+                self.highlighted_boxes.append(Highlight(move_x, move_y))
         # If a start piece has been chosen
         elif len(self.move) == 1:
             end_spot = self.board.get_box(
                 self.move[0][1], self.move[0][0]).piece
             # Switch chosen start piece if player picks piece of same color
             if (selected_piece is not None and end_spot is not None) and selected_piece.is_white == end_spot.is_white:
-                self.move[0] = (mouse_x, mouse_y)
-                self.highlighted_boxes[-1] = Highlight(mouse_x, mouse_y)
+                self.move[0] = (move_x, move_y)
+                self.highlighted_boxes[-1] = Highlight(move_x, move_y)
             # Add end position to move data if spot is empty or has opposite color piece
             else:
-                self.move.append((mouse_x, mouse_y))
-                self.highlighted_boxes.append(Highlight(mouse_x, mouse_y))
+                self.move.append((move_x, move_y))
+                self.highlighted_boxes.append(Highlight(move_x, move_y))
 
         # If both a start and end piece have been chosen
         if len(self.move) == 2:
