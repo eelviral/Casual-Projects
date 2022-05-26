@@ -217,13 +217,6 @@ class Game:
             if self.is_stalemate():
                 self.status = GameStatus.STALEMATE
 
-        # Game ends when King is captured
-        if end_piece is not None and isinstance(end_piece, King):
-            if player.is_white_side:
-                self.status = GameStatus.WHITE_WIN
-            else:
-                self.status = GameStatus.BLACK_WIN
-
         # Let other player move next turn
         if self.current_turn == self.players[0]:
             self.current_turn = self.players[1]
