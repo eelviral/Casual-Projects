@@ -157,18 +157,6 @@ class Game:
                     move.start.x, move.start.y + y).piece
                 move.piece_captured = end_piece
 
-        # Check if a castling move is occurring
-        if (start_piece is not None and isinstance(start_piece, King)
-                and start_piece.is_castling):
-            move.castling_move = True
-            y = move.end.y - move.start.y
-            rook_start = self.board.get_box(move.start.x, 0 if y < 0 else 7)
-            rook_end = self.board.get_box(move.start.x, move.end.y + 1 if y < 0 else move.end.y - 1)
-
-            rook_end.piece = rook_start.piece
-            rook_start.piece = None
-            start_piece.is_castling = False
-
         # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
         if start_piece is not None and isinstance(start_piece, Pawn):
             if start_piece.moves_made == 1 and start_piece.two_step_move:
@@ -194,12 +182,29 @@ class Game:
 
         # Move the piece
         move.end.piece = move.start.piece
-        move.end.controlled_squares = move.start.piece.controlled_squares(
-            self.board, move.end.x, move.end.y)
         move.start.piece = None
-        move.start.controlled_squares = None
+
+        # Check if a castling move is occurring
+        if (start_piece is not None and isinstance(start_piece, King) and
+                start_piece.is_castling):
+            move.castling_move = True
+            y = move.end.y - move.start.y
+            rook_start = self.board.get_box(move.start.x, 0 if y < 0 else 7)
+            rook_end = self.board.get_box(move.end.x, move.end.y + 1 if y < 0 else move.end.y - 1)
+
+            rook_end.piece = rook_start.piece
+            rook_start.piece = None
+            start_piece.is_castling = False
+
         self.board.update_controlled_squares()
-        
+
+        # Game ends when King is captured
+        if end_piece is not None and isinstance(end_piece, King):
+            if player.is_white_side:
+                self.status = GameStatus.WHITE_WIN
+            else:
+                self.status = GameStatus.BLACK_WIN
+
         # See if this move put opposing king in check and look for checkmate
         king_piece, king_box = self.board.get_king_box(not self.current_turn.is_white_side)
         if king_piece.risk_check(self.board, king_box.x, king_box.y):
@@ -419,7 +424,11 @@ class Game:
                 piece_legal_moves = box.piece.legal_moves(self.board, box.x, box.y)
                 if len(piece_legal_moves) > 0:
                     for move in piece_legal_moves:
-                        legal_moves.append([[box.x, box.y], move])
+                        start = self.board.get_box(box.x, box.y)
+                        end = self.board.get_box(move[0], move[1])
+                        # Make sure to only include moves that dont put or keep king in check
+                        if self.protects_king(start, end):
+                            legal_moves.append([[box.x, box.y], move])
         return legal_moves
 
     def mouse_click(self, pos) -> None:

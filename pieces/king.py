@@ -15,6 +15,7 @@ class King(Piece):
 
         x = abs(end.x - start.x)
         y = abs(end.y - start.y)
+        self.is_castling = False
 
         # Don't move if same square
         if x == 0 and y == 0:
@@ -65,10 +66,22 @@ class King(Piece):
                         not self.risk_check(board, next_x, next_y)):
                     moves.append((next_x, next_y))
                 continue
+
+        for vector in [-2, 2]:
+            next_y = y + vector
+            if next_y < 0 or next_y > 7:
+                continue
+
+            next_spot = board.get_box(x, next_y)
+            if self.is_valid_castle(board, current_spot, next_spot):
+                moves.append((x, next_y))
         return moves
 
     def is_valid_castle(self, board, start, end) -> bool:
         if self.moves_made > 0:
+            return False
+
+        if self.risk_check(board, start.x, start.y):
             return False
 
         x = abs(end.x - start.x)
@@ -80,9 +93,13 @@ class King(Piece):
                 if self.risk_check(board, start.x, next_y):
                     return False
 
+                next_spot = board.get_box(start.x, next_y)
+                if next_spot.piece is not None:
+                    return False
+
             from .rook import Rook
-            rook_box = board.get_box(start.x, 0 if y < 0 else 7).piece
-            if isinstance(rook_box, Rook) and rook_box.moves_made == 0:
+            rook_box = board.get_box(start.x, 0 if y < 0 else 7)
+            if isinstance(rook_box.piece, Rook) and rook_box.piece.moves_made == 0:
                 self.is_castling = True
                 return True
         return False
