@@ -82,7 +82,7 @@ class Pawn(Piece):
         # Vertical movement
         # Two step move
         if self.moves_made == 0:
-            for i in range(x_vector, 2 * x_vector, x_vector):
+            for i in range(x_vector, 3 * x_vector, x_vector):
                 next_x = x + i
                 if next_x < 0 or next_x > 7:
                     break
