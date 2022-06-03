@@ -41,4 +41,4 @@ python main.py
 
 ## License
 
-None (public domain)
+This repository is available under the MIT license. See the LICENSE file for more info.
