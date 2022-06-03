@@ -66,6 +66,7 @@ class Game:
         self._current_turn = None
         self._status = GameStatus.ACTIVE
         self.promotion = False
+        self.en_passant_legal = False
         self.promotion_pieces = []
 
     def init(self, p1, p2):
@@ -121,6 +122,7 @@ class Game:
 
     def make_move(self, move, player) -> bool:
         start_piece = move.start.piece
+        move.previous_board = copy.deepcopy(self.board)
 
         # Cannot move an empty box
         if start_piece is None:
@@ -157,8 +159,9 @@ class Game:
                     move.start.x, move.start.y + y).piece
                 move.piece_captured = end_piece
 
-        # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
+        # If pawn is moving
         if start_piece is not None and isinstance(start_piece, Pawn):
+            # If a pawn moved two ranks, en passant is legal on this pawn on immediate move
             if start_piece.moves_made == 1 and start_piece.two_step_move:
                 move.en_passant_legal = True
             elif start_piece.is_promoted:
@@ -217,11 +220,9 @@ class Game:
             if self.is_stalemate():
                 self.status = GameStatus.STALEMATE
 
-        # Let other player move next turn
-        if self.current_turn == self.players[0]:
-            self.current_turn = self.players[1]
-        else:
-            self.current_turn = self.players[0]
+        # Let other player move next turn (unless its a promotion)
+        if not self.promotion:
+            self.switch_turns()
 
         self.board.update_controlled_squares()
         return True
@@ -339,7 +340,7 @@ class Game:
         self.draw_labels()
         self.draw_pieces()
 
-        if self.promotion:
+        if self.promotion and len(self.moves_played) > 0:
             last_move = self.moves_played[-1]
             self.draw_promotion_options(last_move.end.x, last_move.end.y, last_move.piece_moved.is_white)
         pygame.display.update()
@@ -384,8 +385,9 @@ class Game:
             else:
                 num = font.render(str(i+1), True, self.white)
             self.screen.blit(num, (col[i].y * SQ_SIZE + SQ_SIZE * 1 / 20, col[i].x * SQ_SIZE + SQ_SIZE * 1 / 20))
+        return
 
-    def draw_promotion_options(self, x, y, is_white):
+    def draw_promotion_options(self, x, y, is_white) -> None:
         color = 'white' if is_white else 'black'
         promotion_images = [IMAGES[color]['queen'],
                             IMAGES[color]['rook'],
@@ -403,6 +405,7 @@ class Game:
 
             if len(self.promotion_pieces) < 4:
                 self.promotion_pieces.append(Spot((x + i), y, promotion_pieces[abs(i)]))
+        return
 
     def get_current_legal_moves(self) -> list:
         legal_moves = []
@@ -424,6 +427,36 @@ class Game:
                             legal_moves.append([[box.x, box.y], move])
         return legal_moves
 
+    def switch_turns(self) -> None:
+        if self.current_turn == self.players[0]:
+            self.current_turn = self.players[1]
+        else:
+            self.current_turn = self.players[0]
+        return
+
+    def undo_move(self) -> None:
+        if len(self.moves_played) > 0:
+            last_move = self.moves_played[-1]
+            if last_move.promotion_move and not self.promotion:
+                self.promotion = True
+                if last_move.piece_moved.is_white != self.current_turn.is_white_side:
+                    self.switch_turns()
+                self.draw_promotion_options(last_move.end.x, last_move.end.y, last_move.piece_moved.is_white)
+            elif last_move.promotion_move and self.promotion:
+                self.promotion = False
+                self.board = last_move.previous_board
+                # Make sure current turn matches after undo
+                if last_move.piece_moved.is_white != self.current_turn.is_white_side:
+                    self.switch_turns()
+                self.moves_played.pop()
+            else:
+                self.board = last_move.previous_board
+                # Make sure current turn matches after undo
+                if last_move.piece_moved.is_white != self.current_turn.is_white_side:
+                    self.switch_turns()
+                self.moves_played.pop()
+        return
+
     def mouse_click(self, pos) -> None:
         """
         Chess Game's response to mouse click events
@@ -433,6 +466,7 @@ class Game:
         """
         mouse_x, mouse_y = [math.floor(i / SQ_SIZE) for i in pos]
         self.move_action(mouse_x, mouse_y)
+        return
 
     def move_action(self, move_x, move_y):
         if move_x > 7 or move_y > 7:
@@ -446,6 +480,7 @@ class Game:
                     last_move.end.piece = spot.piece
                     self.promotion_pieces = []
                     self.promotion = False
+                    self.switch_turns()
             return
 
         selected_piece = self.board.get_box(move_y, move_x).piece
@@ -481,3 +516,4 @@ class Game:
                 self.highlighted_boxes = self.highlighted_boxes[:-2]
             # Clear move data
             self.move.clear()
+        return
