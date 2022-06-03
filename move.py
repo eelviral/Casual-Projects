@@ -1,6 +1,7 @@
 from player import Player
 from spot import Spot
 from piece import Piece
+from board import Board
 
 
 class Move:
@@ -26,6 +27,8 @@ class Move:
         If this move makes en passant legal for the next move
     _en_passant_move : bool
         If en passant move was played
+    _previous_board : Board
+        The board state before this move was played
     """
 
     def __init__(self, player, start, end):
@@ -38,6 +41,7 @@ class Move:
         self._promotion_move = False
         self._en_passant_legal = False
         self._en_passant_move = False
+        self._previous_board = None
 
     @property
     def player(self) -> Player:
@@ -153,6 +157,21 @@ class Move:
             self._en_passant_move = value
         else:
             raise TypeError("en_passant_legal must be a boolean")
+
+    @property
+    def previous_board(self) -> Board:
+        """Get or set the previous board
+
+        :return: Board
+        """
+        return self._previous_board
+
+    @previous_board.setter
+    def previous_board(self, value):
+        if isinstance(value, Board):
+            self._previous_board = value
+        else:
+            raise TypeError("previous_board must be a Board")
 
     def __repr__(self):
         string = f'{repr(self.piece_moved)} at ({self.start.x},{self.start.y})'
