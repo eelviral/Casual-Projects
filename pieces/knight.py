@@ -1,59 +1,31 @@
-from piece import Piece
-from itertools import product
+from pieces.piece import Piece
+from type import PieceType, TeamType
 
 
 class Knight(Piece):
-    def __init__(self, white):
-        super().__init__(white)
-
-    def can_move(self, board, start, end) -> bool:
+    """
+    Represents a Knight piece in a chess game. Inherits from the Piece class.
+    
+    The Knight class is a subclass of the Piece class, with a specific type of PieceType.KNIGHT.
+    
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'N', 'n').
+        type (PieceType): The type of the piece (KNIGHT).
+    """
+    
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if knight can currently move to marked position
+        Initializes a Knight with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
-        x = abs(start.x - end.x)
-        y = abs(start.y - end.y)
-
-        # Don't move if same square
-        if x == 0 and y == 0:
-            return False
-
-        if x * y == 2:
-            # If end position is empty, move
-            if end.piece is None:
-                return True
-            # Cannot move if there's a piece at the end position of the same color
-            if end.piece.is_white == self.is_white:
-                return False
-            else:
-                return True
-        return False
-
-    def controlled_squares(self, board, x, y) -> list:
-        squares = []
-        knight_moves = list(product((-2, 2), (-1, 1))) + list(product((-1, 1), (-2, 2)))
-        for vector in knight_moves:
-            next_x = x + vector[0]
-            next_y = y + vector[1]
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-            squares.append((next_x, next_y))
-        return squares
-
-    def legal_moves(self, board, x, y) -> list:
-        moves = []
-        current_spot = board.get_box(x, y)
-        knight_moves = list(product((-2, 2), (-1, 1))) + list(product((-1, 1), (-2, 2)))
-        for vector in knight_moves:
-            next_x = x + vector[0]
-            next_y = y + vector[1]
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-
-            next_spot = board.get_box(next_x, next_y)
-            if next_spot.piece is None:
-                moves.append((next_x, next_y))
-            else:
-                if next_spot.piece.is_white != current_spot.piece.is_white:
-                    moves.append((next_x, next_y))
-                continue
-        return moves
+        symbol = 'N' if is_white else 'n'
+        super().__init__(x, y, team, is_white, symbol, PieceType.KNIGHT)

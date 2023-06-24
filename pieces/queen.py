@@ -1,29 +1,31 @@
-from piece import Piece
-from .rook import Rook
-from .bishop import Bishop
+from pieces.piece import Piece
+from type import PieceType, TeamType
 
 
 class Queen(Piece):
-    def __init__(self, white):
-        super().__init__(white)
-        self.rook = Rook(white)
-        self.bishop = Bishop(white)
-
-    def can_move(self, board, start, end) -> bool:
+    """
+    Represents a Queen piece in a chess game. Inherits from the Piece class.
+    
+    The Queen class is a subclass of the Piece class, with a specific type of PieceType.QUEEN.
+    
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'Q', 'q').
+        type (PieceType): The type of the piece (QUEEN).
+    """
+    
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if queen can currently move to marked position
+        Initializes a Queen with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
-        if (self.rook.can_move(board, start, end)
-                or self.bishop.can_move(board, start, end)):
-            return True
-        return False
-
-    def controlled_squares(self, board, x, y) -> list:
-        rook_squares = self.rook.controlled_squares(board, x, y)
-        bishop_squares = self.bishop.controlled_squares(board, x, y)
-        return rook_squares + bishop_squares
-
-    def legal_moves(self, board, x, y) -> list:
-        rook_moves = self.rook.legal_moves(board, x, y)
-        bishop_moves = self.bishop.legal_moves(board, x, y)
-        return rook_moves + bishop_moves
+        symbol = 'Q' if is_white else 'q'
+        super().__init__(x, y, team, is_white, symbol, PieceType.QUEEN)

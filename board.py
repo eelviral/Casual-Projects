@@ -1,109 +1,55 @@
-from spot import Spot
+from type import TeamType
 from pieces import *
 
 
 class Board:
+    """
+    A class used to represent a Chess Board.
+
+    Attributes:
+        board (list): A list of Piece objects representing the current state of the chess board.
+    """
+
     def __init__(self):
-        self.boxes = []
-        self.white_top_spawn = False
-
-    def get_box(self, x, y) -> Spot:
-        if (x < 0 or x > 7) or (y < 0 or y > 7):
-            raise Exception("Index out of bound.")
-        return self.boxes[x][y]
-
-    def get_king_box(self, is_white) -> (King, Spot):
-        empty_box = Spot(0, 0)
-        for row in self.boxes:
-            for box in row:
-                if box.piece is None:
-                    continue
-
-                if box.piece.is_white != is_white:
-                    continue
-
-                if isinstance(box.piece, King) and box.piece.is_white == is_white:
-                    return box.piece, box
-        return None, empty_box
-
-    def add_first_rank(self, white, rank) -> None:
-        row = [Spot(rank, 0, Rook(white)),
-               Spot(rank, 1, Knight(white)),
-               Spot(rank, 2, Bishop(white))]
-        if (rank == 0 and white) or (rank == 7 and not white):
-            row += [Spot(rank, 3, King(white)),
-                    Spot(rank, 4, Queen(white))]
-        elif (rank == 0 and not white) or (rank == 7 and white):
-            row += [Spot(rank, 3, Queen(white)),
-                    Spot(rank, 4, King(white))]
-        row += [Spot(rank, 5, Bishop(white)),
-                Spot(rank, 6, Knight(white)),
-                Spot(rank, 7, Rook(white))]
-
-        self.boxes.append(row)
-
-    def add_pawns(self, white, rank) -> None:
-        if rank == 1:
-            white_top_spawn = True
-        else:
-            white_top_spawn = False
-        self.boxes.append([Spot(rank, j, Pawn(white, white_top_spawn))
-                          for j in range(8)])
-
-    def reset_board(self) -> None:
         """
-        Initialize/reset position of black and white pieces
+        Initializes a Board with an empty list and calls the method to initialize the board with pieces.
         """
-        if self.white_top_spawn:
-            self.add_first_rank(True, 0)
-            self.add_pawns(True, 1)
-        else:
-            self.add_first_rank(False, 0)
-            self.add_pawns(False, 1)
+        self.board = []
+        self._initialize_board()
+    
+    def _initialize_board(self):
+        """
+        Initializes the board with chess pieces in their starting positions.
+        The board is represented as a list of Piece objects.
+        """
+        # Add non-pawn pieces
+        for p in range(2):
+            team_type = TeamType.OPPONENT if p == 0 else TeamType.ALLY
+            is_white = False if team_type == TeamType.OPPONENT else True
+            y = 0 if team_type == TeamType.OPPONENT else 7
 
-        # Add empty boxes by marking them as None
-        self.boxes.extend([[Spot(i, j, None) for j in range(0, 8)]
-                          for i in range(2, 6)])
+            self.board.append(Rook(x=0, y=y, team=team_type, is_white=is_white))
+            self.board.append(Knight(x=1, y=y, team=team_type, is_white=is_white))
+            self.board.append(Bishop(x=2, y=y, team=team_type, is_white=is_white))
+            self.board.append(Queen(x=3, y=y, team=team_type, is_white=is_white))
+            self.board.append(King(x=4, y=y, team=team_type, is_white=is_white))
+            self.board.append(Bishop(x=5, y=y, team=team_type, is_white=is_white))
+            self.board.append(Knight(x=6, y=y, team=team_type, is_white=is_white))
+            self.board.append(Rook(x=7, y=y, team=team_type, is_white=is_white))
 
-        if self.white_top_spawn:
-            self.add_pawns(False, 6)
-            self.add_first_rank(False, 7)
-        else:
-            self.add_pawns(True, 6)
-            self.add_first_rank(True, 7)
+        # Add pawns
+        for i in range(8):
+            self.board.append(Pawn(x=i, y=1, team=TeamType.OPPONENT, is_white=False))
+            self.board.append(Pawn(x=i, y=6, team=TeamType.ALLY, is_white=True))
 
-    def update_controlled_squares(self) -> None:
-        for row in self.boxes:
-            for box in row:
-                if box.piece is None:
-                    continue
-                if box.piece.is_white:
-                    box.controlled_squares = box.piece.controlled_squares(
-                        self, box.x, box.y)
-                else:
-                    box.controlled_squares = box.piece.controlled_squares(
-                        self, box.x, box.y)
+    def __getitem__(self, index):
+        """
+        Returns the Piece object at the given index in the board list.
 
-    def get_controlled_squares(self, is_white) -> list:
-        controlled_squares = []
-        for row in self.boxes:
-            for box in row:
-                if box.piece is None:
-                    continue
+        Args:
+            index (int): The index of the piece in the board list.
 
-                if box.piece.is_white and is_white:
-                    box.controlled_squares = box.piece.controlled_squares(
-                        self, box.x, box.y)
-                    controlled_squares.extend(box.controlled_squares)
-                elif (not box.piece.is_white) and (not is_white):
-                    box.controlled_squares = box.piece.controlled_squares(
-                        self, box.x, box.y)
-                    controlled_squares.extend(box.controlled_squares)
-
-        return list(set(controlled_squares))
-
-    def __repr__(self):
-        return '\n'.join(map(repr, [[repr(spot) for spot in box] for box in self.boxes]))
-
-    def __str__(self):
-        return '\n'.join(map(str, [[str(spot) for spot in box] for box in self.boxes]))
+        Returns:
+            Piece: The Piece object at the given index.
+        """
+        return self.board[index]
