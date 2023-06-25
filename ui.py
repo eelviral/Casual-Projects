@@ -17,7 +17,50 @@ class ChessUI:
 
         # Load images
         self.images = self.__load_images()
+        
+        # Event handling
+        self.first_click = None
+        self.canvas.bind("<Button-1>", self.on_click)
 
+    def on_click(self, event):
+        """
+        Handles a mouse click event.
+
+        Args:
+            event (tkinter.Event): The event object.
+        """
+        if self.first_click is None:
+            x = (event.x - 50) // 100
+            y = (event.y - 50) // 100
+            piece = self.get_piece_at(x, y)
+            if piece is not None:
+                self.first_click = (x, y)
+        else:
+            x, y = self.first_click
+            new_x = (event.x - 50) // 100
+            new_y = (event.y - 50) // 100
+            piece = self.get_piece_at(x, y)
+            self.first_click = None
+            
+            self.game_state.board.move_piece(piece, new_x, new_y)
+            self.update()
+
+    def get_piece_at(self, x, y):
+        """
+        Returns the piece at a given position on the board.
+
+        Args:
+            x (int): The x-coordinate.
+            y (int): The y-coordinate.
+
+        Returns:
+            Piece: The piece at the given position, or None if there is no piece.
+        """
+        for piece in self.game_state.board:
+            if piece.x == x and piece.y == y:
+                return piece
+        return None
+    
     @staticmethod
     def __load_images():
         """Load images for each chess piece and return a dictionary mapping piece symbols to images."""

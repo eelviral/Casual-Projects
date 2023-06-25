@@ -1,4 +1,4 @@
-from pieces.piece import Piece
+from pieces import Piece
 from type import PieceType, TeamType
 
 
@@ -29,3 +29,7 @@ class Bishop(Piece):
         """
         symbol = 'B' if is_white else 'b'
         super().__init__(x, y, team, is_white, symbol, PieceType.BISHOP)
+        
+    def legal_move(self, px: int, py: int, x: int, y: int):
+        return abs(x - px) == abs(y - py)
+    

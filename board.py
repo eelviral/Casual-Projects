@@ -42,6 +42,32 @@ class Board:
             self.board.append(Pawn(x=i, y=1, team=TeamType.OPPONENT, is_white=False))
             self.board.append(Pawn(x=i, y=6, team=TeamType.ALLY, is_white=True))
 
+    def move_piece(self, piece, new_x, new_y):
+        """
+        Moves a piece to a new position on the board. If the new position is occupied by another piece,
+        that piece is removed from the board. If the new position is occupied by an ally, the move is not made.
+
+        Args:
+            piece (Piece): The piece to move.
+            new_x (int): The new x-coordinate for the piece.
+            new_y (int): The new y-coordinate for the piece.
+        """
+        # Check if there's a piece at the new position
+        for other_piece in self.board:
+            if other_piece.x == new_x and other_piece.y == new_y:
+                # If the piece at the new position is from the same team, do not move the piece
+                if other_piece.team == piece.team:
+                    return
+                # If the piece at the new position is from the opposing team, remove it from the board
+                else:
+                    self.board.remove(other_piece)
+                break
+
+        if piece.legal_move(px=piece.x, py=piece.y, x=new_x, y=new_y):
+            # Move the piece
+            piece.x = new_x
+            piece.y = new_y
+        
     def __getitem__(self, index):
         """
         Returns the Piece object at the given index in the board list.

@@ -1,8 +1,8 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from type import PieceType, TeamType
 
 
-class Piece:
+class Piece(ABC):
     """
     A parent class used to represent a Piece on a chessboard.
 
@@ -33,6 +33,10 @@ class Piece:
         self._is_white = is_white
         self._symbol = symbol
         self._type = type
+    
+    @abstractmethod
+    def legal_move(self, px: int, py: int, x: int, y: int):
+        pass
 
     @property
     def x(self) -> int:
@@ -43,6 +47,34 @@ class Piece:
     def y(self) -> int:
         """Returns the y-coordinate of the piece on the board."""
         return self._y
+    
+    @x.setter
+    def x(self, value: int):
+        """
+        Sets the x-coordinate of the piece on the board.
+
+        Args:
+            value (int): The new x-coordinate.
+        """
+        if not isinstance(value, int):
+            raise TypeError("The x-coordinate must be an integer.")
+        if not 0 <= value < 8:
+            raise ValueError("The x-coordinate must be between 0 and 7.")
+        self._x = value
+
+    @y.setter
+    def y(self, value: int):
+        """
+        Sets the y-coordinate of the piece on the board.
+
+        Args:
+            value (int): The new y-coordinate.
+        """
+        if not isinstance(value, int):
+            raise TypeError("The y-coordinate must be an integer.")
+        if not 0 <= value < 8:
+            raise ValueError("The y-coordinate must be between 0 and 7.")
+        self._y = value
 
     @property
     def team(self) -> TeamType:
@@ -68,4 +100,3 @@ class Piece:
     def type(self) -> PieceType:
         """Returns the type of the piece."""
         return self._type
-    

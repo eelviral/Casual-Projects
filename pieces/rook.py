@@ -1,4 +1,4 @@
-from pieces.piece import Piece
+from pieces import Piece
 from type import PieceType, TeamType
 
 
@@ -29,3 +29,7 @@ class Rook(Piece):
         """
         symbol = 'R' if is_white else 'r'
         super().__init__(x, y, team, is_white, symbol, PieceType.ROOK)
+        
+    def legal_move(self, px: int, py: int, x: int, y: int):
+        return px == x or py == y
+    

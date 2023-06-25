@@ -1,4 +1,4 @@
-from pieces.piece import Piece
+from pieces import Piece
 from type import PieceType, TeamType
 
 
@@ -29,3 +29,6 @@ class Queen(Piece):
         """
         symbol = 'Q' if is_white else 'q'
         super().__init__(x, y, team, is_white, symbol, PieceType.QUEEN)
+    
+    def legal_move(self, px: int, py: int, x: int, y: int):
+        return px == x or py == y or abs(x - px) == abs(y - py)

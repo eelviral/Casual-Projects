@@ -1,4 +1,4 @@
-from pieces.piece import Piece
+from pieces import Piece
 from type import PieceType, TeamType
 
 
@@ -29,3 +29,8 @@ class Pawn(Piece):
         """
         symbol = 'P' if is_white else 'p'
         super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
+    
+    def legal_move(self, px: int, py: int, x: int, y: int):
+        dx = x - px
+        dy = y - py
+        return dx == 0 and (dy == 1 or (py == 1 and dy == 2))  # Assumes pawns are moving "up" the board
