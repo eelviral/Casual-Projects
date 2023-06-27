@@ -1,5 +1,9 @@
 from pieces import Piece
 from type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from board import Board
 
 
 class Rook(Piece):
@@ -30,6 +34,22 @@ class Rook(Piece):
         symbol = 'R' if is_white else 'r'
         super().__init__(x, y, team, is_white, symbol, PieceType.ROOK)
         
-    def legal_move(self, px: int, py: int, x: int, y: int):
-        return px == x or py == y
+    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Determine if a Rook's move is legal.
+
+        Args:
+            px (int): The current x-coordinate of the Rook.
+            py (int): The current y-coordinate of the Rook.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        if px == x or py == y:
+            if self._path_is_clear(px, py, x, y, board, 'linear'):
+                return self._can_capture_or_occupy_square(x, y, board)
+        return False
     

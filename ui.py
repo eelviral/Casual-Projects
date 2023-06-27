@@ -1,5 +1,6 @@
 import tkinter as tk
 from game_state import GameState
+from pieces import Piece
 
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
@@ -17,12 +18,14 @@ class ChessUI:
 
         # Load images
         self.images = self.__load_images()
-        
+
         # Event handling
         self.first_click = None
+        self.selected_piece = None
+        self.legal_moves = []
         self.canvas.bind("<Button-1>", self.on_click)
 
-    def on_click(self, event):
+    def on_click(self, event: tk.Event):
         """
         Handles a mouse click event.
 
@@ -32,37 +35,35 @@ class ChessUI:
         if self.first_click is None:
             x = (event.x - 50) // 100
             y = (event.y - 50) // 100
-            piece = self.get_piece_at(x, y)
+            piece = self.game_state.board.piece_at(x, y)
             if piece is not None:
                 self.first_click = (x, y)
+                self.selected_piece = piece
+                self.calculate_legal_moves(piece)  # Update is called in calculate_legal_moves
         else:
             x, y = self.first_click
             new_x = (event.x - 50) // 100
             new_y = (event.y - 50) // 100
-            piece = self.get_piece_at(x, y)
+            piece = self.game_state.board.piece_at(x, y)
             self.first_click = None
-            
-            self.game_state.board.move_piece(piece, new_x, new_y)
+
+            if (new_x, new_y) in self.legal_moves:
+                self.game_state.board.move_piece(piece, new_x, new_y)
+            self.selected_piece = None
+            self.legal_moves = []
             self.update()
 
-    def get_piece_at(self, x, y):
-        """
-        Returns the piece at a given position on the board.
+    def calculate_legal_moves(self, piece: Piece):
+        legal_moves = []
+        for i in range(8):
+            for j in range(8):
+                if piece.legal_move(px=piece.x, py=piece.y, x=i, y=j, board=self.game_state.board):
+                    legal_moves.append((i, j))
+        self.legal_moves = legal_moves
+        self.update()  # Update immediately after calculating legal moves
 
-        Args:
-            x (int): The x-coordinate.
-            y (int): The y-coordinate.
-
-        Returns:
-            Piece: The piece at the given position, or None if there is no piece.
-        """
-        for piece in self.game_state.board:
-            if piece.x == x and piece.y == y:
-                return piece
-        return None
-    
     @staticmethod
-    def __load_images():
+    def __load_images() -> dict:
         """Load images for each chess piece and return a dictionary mapping piece symbols to images."""
         images = {}
         pieces = {
@@ -88,6 +89,8 @@ class ChessUI:
                 x2 = x1 + 100
                 y2 = y1 + 100
                 color = "#deb887" if (i + j) % 2 == 0 else "#4d3222"
+                if (i, j) in self.legal_moves:
+                    color = "#00ff00"  # Highlight with green color for legal moves
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color)
 
     def draw_pieces(self):

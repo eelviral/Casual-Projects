@@ -23,7 +23,7 @@ class Player:
         return self._is_white_side
 
     @is_white_side.setter
-    def is_white_side(self, value) -> None:
+    def is_white_side(self, value):
         if type(value) == bool:
             self._is_white_side = value
         else:
@@ -43,7 +43,7 @@ class Player:
         return self._is_human
 
     @is_human.setter
-    def is_human(self, value) -> None:
+    def is_human(self, value):
         if type(value) == bool:
             self._is_human = value
         else:

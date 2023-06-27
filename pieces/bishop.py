@@ -1,5 +1,9 @@
 from pieces import Piece
 from type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from board import Board
 
 
 class Bishop(Piece):
@@ -30,6 +34,21 @@ class Bishop(Piece):
         symbol = 'B' if is_white else 'b'
         super().__init__(x, y, team, is_white, symbol, PieceType.BISHOP)
         
-    def legal_move(self, px: int, py: int, x: int, y: int):
-        return abs(x - px) == abs(y - py)
-    
+    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Determine if a Bishop's move is legal.
+
+        Args:
+            px (int): The current x-coordinate of the Bishop.
+            py (int): The current y-coordinate of the Bishop.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        if abs(x - px) == abs(y - py):
+            if self._path_is_clear(px, py, x, y, board, direction='diagonal'):
+                return self._can_capture_or_occupy_square(x, y, board)
+        return False
