@@ -3,6 +3,9 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from game_state import GameState
+
+if TYPE_CHECKING:
     from board import Board
 
 
@@ -39,7 +42,7 @@ class Piece(ABC):
         self._type = type
     
     @abstractmethod
-    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Abstract method to determine whether a proposed move is legal, according to the rules of the piece.
 
@@ -62,7 +65,7 @@ class Piece(ABC):
         raise NotImplementedError()
 
     
-    def _can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
+    def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
         """
         Determine if a given piece can capture an opponent's piece at a specified square, 
         or occupy it if the square is empty.

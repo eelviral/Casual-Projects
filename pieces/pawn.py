@@ -3,6 +3,9 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from game_state import GameState
+    
+if TYPE_CHECKING:
     from board import Board
 
 
@@ -34,7 +37,7 @@ class Pawn(Piece):
         symbol = 'P' if is_white else 'p'
         super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
     
-    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a pawn's move is legal.
 
@@ -48,9 +51,9 @@ class Pawn(Piece):
         Returns:
             bool: True if the move is legal, False otherwise.
         """
-        if self._moving_forward(px, py, x, y, board) or \
-           self._capturing(px, py, x, y, board) or \
-           self._en_passant(px, py, x, y, board):
+        if self._moving_forward(px, py, x, y, board=game_state.board) or \
+           self._capturing(px, py, x, y, board=game_state.board) or \
+           self._en_passant(px, py, x, y, game_state):
             return True
         else:
             return False
@@ -100,9 +103,9 @@ class Pawn(Piece):
         dy = y - py
         direction = -1 if self.team == TeamType.ALLY else 1
         return (abs(dx) == 1 and dy == direction) and \
-        (board.piece_at(x, y) is not None and self._can_capture_or_occupy_square(x, y, board))
+        (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))
 
-    def _en_passant(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    def _en_passant(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Check if the pawn is capturing by "en passant".
 
@@ -125,7 +128,7 @@ class Pawn(Piece):
         direction = -1 if self.team == TeamType.ALLY else 1
         capture_rank = 3 if self.team == TeamType.ALLY else 4  # Decide the capture rank based on team
 
-        last_move = board.last_move
+        last_move = game_state.last_move
         if last_move is None:
             return False
 

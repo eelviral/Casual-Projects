@@ -3,7 +3,7 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from board import Board
+    from game_state import GameState
 
 
 class Rook(Piece):
@@ -34,7 +34,7 @@ class Rook(Piece):
         symbol = 'R' if is_white else 'r'
         super().__init__(x, y, team, is_white, symbol, PieceType.ROOK)
         
-    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a Rook's move is legal.
 
@@ -49,7 +49,7 @@ class Rook(Piece):
             bool: True if the move is legal, False otherwise.
         """
         if px == x or py == y:
-            if self._path_is_clear(px, py, x, y, board, 'linear'):
-                return self._can_capture_or_occupy_square(x, y, board)
+            if self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear'):
+                return self.can_capture_or_occupy_square(x, y, board=game_state.board)
         return False
     

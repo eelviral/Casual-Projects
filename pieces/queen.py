@@ -3,7 +3,7 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from board import Board
+    from game_state import GameState
 
 
 class Queen(Piece):
@@ -34,7 +34,7 @@ class Queen(Piece):
         symbol = 'Q' if is_white else 'q'
         super().__init__(x, y, team, is_white, symbol, PieceType.QUEEN)
     
-    def legal_move(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a Queen's move is legal.
 
@@ -48,12 +48,12 @@ class Queen(Piece):
         Returns:
             bool: True if the move is legal, False otherwise.
         """
-        if not self._can_capture_or_occupy_square(x, y, board):
+        if not self.can_capture_or_occupy_square(x, y, board=game_state.board):
             return False
             
         if px == x or py == y:
-            return self._path_is_clear(px, py, x, y, board, direction='linear')    
+            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear')    
         elif abs(x - px) == abs(y - py):
-            return self._path_is_clear(px, py, x, y, board, direction='diagonal')
+            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal')
             
         return False

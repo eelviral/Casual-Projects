@@ -1,16 +1,32 @@
 import tkinter as tk
 from game_state import GameState
 from pieces import Piece
+from ui import *
 
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
 
-
 class ChessUI:
-    """A class to represent the user interface for a chess game."""
+    """
+    A class to represent the user interface for a chess game.
+
+    Attributes:
+        game_state (GameState): The current state of the game.
+        root (Tk): The root Tkinter instance.
+        canvas (Canvas): The Tkinter canvas to draw the game on.
+        images (dict): Dictionary mapping piece symbols to their images.
+        first_click (tuple): The coordinates of the first click, or None if no click has been made yet.
+        selected_piece (Piece): The selected piece, or None if no piece is selected.
+        legal_moves (list): List of current legal moves.
+    """
 
     def __init__(self, game_state: GameState):
-        """Initialize the ChessUI with a given game state."""
+        """
+        Initialize the ChessUI with a given game state.
+
+        Args:
+            game_state (GameState): The current state of the game.
+        """
         self.game_state = game_state
         self.root = tk.Tk()
         self.canvas = tk.Canvas(self.root, width=900, height=900)
@@ -23,48 +39,27 @@ class ChessUI:
         self.first_click = None
         self.selected_piece = None
         self.legal_moves = []
-        self.canvas.bind("<Button-1>", self.on_click)
-
-    def on_click(self, event: tk.Event):
-        """
-        Handles a mouse click event.
-
-        Args:
-            event (tkinter.Event): The event object.
-        """
-        if self.first_click is None:
-            x = (event.x - 50) // 100
-            y = (event.y - 50) // 100
-            piece = self.game_state.board.piece_at(x, y)
-            if piece is not None:
-                self.first_click = (x, y)
-                self.selected_piece = piece
-                self.calculate_legal_moves(piece)  # Update is called in calculate_legal_moves
-        else:
-            x, y = self.first_click
-            new_x = (event.x - 50) // 100
-            new_y = (event.y - 50) // 100
-            piece = self.game_state.board.piece_at(x, y)
-            self.first_click = None
-
-            if (new_x, new_y) in self.legal_moves:
-                self.game_state.board.move_piece(piece, new_x, new_y)
-            self.selected_piece = None
-            self.legal_moves = []
-            self.update()
+        self.click_handler = ClickHandler(self)
+        self.canvas.bind("<Button-1>", self.click_handler.handle_click)
 
     def calculate_legal_moves(self, piece: Piece):
-        legal_moves = []
-        for i in range(8):
-            for j in range(8):
-                if piece.legal_move(px=piece.x, py=piece.y, x=i, y=j, board=self.game_state.board):
-                    legal_moves.append((i, j))
-        self.legal_moves = legal_moves
+        """
+        Calculate the legal moves for a given piece and update the game board.
+
+        Args:
+            piece (Piece): The piece to calculate legal moves for.
+        """
+        self.legal_moves = self.game_state.calculate_legal_moves_for_piece(piece)
         self.update()  # Update immediately after calculating legal moves
 
     @staticmethod
     def __load_images() -> dict:
-        """Load images for each chess piece and return a dictionary mapping piece symbols to images."""
+        """
+        Load images for each chess piece.
+
+        Returns:
+            dict: A dictionary mapping piece symbols to their images.
+        """
         images = {}
         pieces = {
             'pawn': 'P',
@@ -81,7 +76,7 @@ class ChessUI:
         return images
 
     def draw_board(self):
-        """Draw the chess board on the canvas."""
+        """Draw the chess board on the canvas, and highlighting for any legal moves."""
         for i in range(8):
             for j in range(8):
                 x1 = i * 100 + 50
@@ -94,7 +89,7 @@ class ChessUI:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color)
 
     def draw_pieces(self):
-        """Draw the chess pieces on the board."""
+        """Draw the chess pieces on the board using the images loaded previously."""
         board = self.game_state.board
         for piece in board:
             if piece is not None:
@@ -105,7 +100,7 @@ class ChessUI:
                     self.canvas.create_image(x, y, image=image, anchor=tk.CENTER)
 
     def draw_labels(self):
-        """Draw labels for the chess board."""
+        """Draw labels for the chess board columns and rows."""
         labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         for i in range(8):
             x = i * 100 + 100
@@ -120,7 +115,11 @@ class ChessUI:
             self.canvas.create_text(x, y, text=8 - i)
 
     def update(self):
-        """Update the chess board and pieces."""
+        """
+        Update the chess board and pieces.
+        
+        Deletes all canvas content and redraws the board, pieces and labels.
+        """
         self.canvas.delete("all")
         self.draw_board()
         self.draw_pieces()
