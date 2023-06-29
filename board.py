@@ -1,6 +1,7 @@
 from type import TeamType
 from pieces import *
 
+
 class Board:
     """
     A class used to represent a Chess Board.

@@ -10,6 +10,7 @@ from game_state import GameState
 # from ai import find_best_move
 from ui.chess_ui import ChessUI
 
+
 class Main:
     @staticmethod
     def start_game():

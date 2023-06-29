@@ -3,10 +3,8 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game_state import GameState
-
-if TYPE_CHECKING:
     from board import Board
+    from game_state import GameState
 
 
 class Piece(ABC):
@@ -54,7 +52,7 @@ class Piece(ABC):
             py (int): The current y-coordinate of the piece.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
+            game_state (GameState): The chess game's state.
 
         Returns:
             bool: True if the move is legal, False otherwise.
@@ -64,7 +62,6 @@ class Piece(ABC):
         """
         raise NotImplementedError()
 
-    
     def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
         """
         Determine if a given piece can capture an opponent's piece at a specified square, 
@@ -108,9 +105,10 @@ class Piece(ABC):
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
-    def __path_is_clear_diagonally(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    @staticmethod
+    def __path_is_clear_diagonally(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
-        Determine whether the path is clear diagonally between two given points. 
+        Determine whether the path is clear diagonally between two given points.
         This is intended for use by the Queen and Bishop subclasses.
 
         Args:
@@ -134,7 +132,8 @@ class Piece(ABC):
                 j += dy
         return True
 
-    def __path_is_clear_linearly(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+    @staticmethod
+    def __path_is_clear_linearly(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
         Determine whether the path is clear in a straight line (horizontally or vertically) 
         between two given points. This is intended for use by the Queen and Rook subclasses.

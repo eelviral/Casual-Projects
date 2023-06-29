@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class PieceType(Enum):
     """
     An enumeration representing the types of pieces in a chess game.

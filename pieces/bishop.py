@@ -43,7 +43,7 @@ class Bishop(Piece):
             py (int): The current y-coordinate of the Bishop.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
+            game_state (GameState): The chess game's state.
 
         Returns:
             bool: True if the move is legal, False otherwise.

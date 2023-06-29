@@ -46,7 +46,7 @@ class GameState:
 
         # If this move was an en passant capture, remove the captured piece
         if isinstance(self.last_move.piece, Pawn) and isinstance(piece, Pawn):
-            if piece._en_passant(px=piece.x, py=piece.y, x=new_x, y=new_y, game_state=self):
+            if piece.en_passant(px=piece.x, py=piece.y, x=new_x, y=new_y, game_state=self):
                 self.board.remove(self.last_move.piece)
 
         # Keep track of this move
@@ -167,8 +167,7 @@ class GameState:
 
         return False
     
-    def promote(self, piece: Pawn, PromotionPiece: type[Piece]):
+    def promote(self, piece: Pawn, promotion_piece: type[Piece]):
         self.board.remove(piece)
-        new_piece = PromotionPiece(x=piece.x, y=piece.y, team=piece.team, is_white=piece.is_white)
+        new_piece = promotion_piece(x=piece.x, y=piece.y, team=piece.team, is_white=piece.is_white)
         self.board.add(new_piece)
-

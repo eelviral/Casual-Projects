@@ -3,10 +3,8 @@ from type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game_state import GameState
-    
-if TYPE_CHECKING:
     from board import Board
+    from game_state import GameState
 
 
 class Pawn(Piece):
@@ -23,7 +21,7 @@ class Pawn(Piece):
         symbol (str): The character symbol representing the piece (e.g., 'P', 'p').
         type (PieceType): The type of the piece (PAWN).
     """
-    
+
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
         Initializes a Pawn with a team, symbol, and coordinates.
@@ -36,7 +34,7 @@ class Pawn(Piece):
         """
         symbol = 'P' if is_white else 'p'
         super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
-    
+
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a pawn's move is legal.
@@ -46,14 +44,14 @@ class Pawn(Piece):
             py (int): The current y-coordinate of the pawn.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
+            game_state (GameState): The chess game's state.
 
         Returns:
             bool: True if the move is legal, False otherwise.
         """
         if self._moving_forward(px, py, x, y, board=game_state.board) or \
-           self._capturing(px, py, x, y, board=game_state.board) or \
-           self._en_passant(px, py, x, y, game_state):
+                self._capturing(px, py, x, y, board=game_state.board) or \
+                self.en_passant(px, py, x, y, game_state):
             return True
         else:
             return False
@@ -79,7 +77,8 @@ class Pawn(Piece):
         dy = y - py
         direction = -1 if self.team == TeamType.ALLY else 1
         is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
-        return dx == 0 and (dy == direction or (is_in_starting_position and dy == 2 * direction)) and board.piece_at(x, y) is None
+        return dx == 0 and (dy == direction or (is_in_starting_position and dy == 2 * direction)) and board.piece_at(x,
+                                                                                                                     y) is None
 
     def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
@@ -103,9 +102,9 @@ class Pawn(Piece):
         dy = y - py
         direction = -1 if self.team == TeamType.ALLY else 1
         return (abs(dx) == 1 and dy == direction) and \
-        (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))
+            (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))
 
-    def _en_passant(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def en_passant(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Check if the pawn is capturing by "en passant".
 
@@ -114,11 +113,12 @@ class Pawn(Piece):
         just-moved pawn "as it passes" through the first square.
 
         Args:
+
             px (int): The current x-coordinate of the pawn.
             py (int): The current y-coordinate of the pawn.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
+            game_state (GameState): The chess game's state.
 
         Returns:
             bool: True if the pawn is capturing by "en passant", False otherwise.
@@ -152,4 +152,3 @@ class Pawn(Piece):
                     return True
 
         return False
-    

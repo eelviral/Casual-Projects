@@ -6,6 +6,7 @@ from ui import *
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
 
+
 class ChessUI:
     """
     A class to represent the user interface for a chess game.
