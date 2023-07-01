@@ -18,6 +18,7 @@ class Piece(ABC):
         is_white (bool): The color of the piece (e.g. True if white, False if black).
         symbol (str): The character symbol representing the piece (e.g., 'P', 'p', 'N', 'n').
         type (PieceType): The type of the piece (e.g., PAWN, KNIGHT).
+        has_moved (bool): Determines whether the piece has already moved (at least once) or not.
     """
     
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool, symbol: str, type: PieceType):
@@ -38,7 +39,8 @@ class Piece(ABC):
         self._is_white = is_white
         self._symbol = symbol
         self._type = type
-    
+        self._has_moved = False
+
     @abstractmethod
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
@@ -219,3 +221,37 @@ class Piece(ABC):
     def type(self) -> PieceType:
         """Returns the type of the piece."""
         return self._type
+
+    @property
+    def has_moved(self) -> bool:
+        """
+        Checks whether the piece has moved at least once.
+
+        Returns:
+            bool: True if the piece has moved, False otherwise.
+        """
+        return self._has_moved
+
+    @has_moved.setter
+    def has_moved(self, value: bool):
+        """
+        Sets the piece's moved state.
+
+        Args:
+            value (bool): The new moved state of the piece.
+        """
+        self._has_moved = value
+
+    def __repr__(self):
+        """
+        Returns a developer-friendly string representation of the Piece object. 
+
+        This method is mainly useful for debugging and logging. The string includes the piece's symbol, 
+        its x and y coordinates, its team, and whether it has moved or not.
+
+        Returns:
+            str: A string representation of the Piece object.
+        """
+        team = "White" if self.is_white else "Black"
+        return f"Piece({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
+
