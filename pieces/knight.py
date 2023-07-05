@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from game_state import GameState
-    
+
 
 class Knight(Piece):
     """
@@ -20,7 +20,7 @@ class Knight(Piece):
         symbol (str): The character symbol representing the piece (e.g., 'N', 'n').
         type (PieceType): The type of the piece (KNIGHT).
     """
-    
+
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
         Initializes a Knight with a team, symbol, and coordinates.
@@ -33,7 +33,7 @@ class Knight(Piece):
         """
         symbol = 'N' if is_white else 'n'
         super().__init__(x, y, team, is_white, symbol, PieceType.KNIGHT)
-        
+
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a Knight's move is legal.
@@ -50,4 +50,10 @@ class Knight(Piece):
         """
         dx = abs(x - px)
         dy = abs(y - py)
-        return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and self.can_capture_or_occupy_square(x, y, board=game_state.board)
+        if ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and self.can_capture_or_occupy_square(x, y,
+                                                                                                  board=game_state.board):
+            if game_state.checking_for_check:
+                if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
+                    return False
+            return True
+        return False

@@ -33,6 +33,7 @@ class Pawn(Piece):
             is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
         symbol = 'P' if is_white else 'p'
+        self.moved_two_steps_last_move = False
         super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
 
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
@@ -49,9 +50,14 @@ class Pawn(Piece):
         Returns:
             bool: True if the move is legal, False otherwise.
         """
+        king = game_state.get_king(self.team)
+
         if self._moving_forward(px, py, x, y, board=game_state.board) or \
                 self._capturing(px, py, x, y, board=game_state.board) or \
                 self.en_passant(px, py, x, y, game_state):
+            if game_state.checking_for_check and king.is_in_check(game_state):
+                if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
+                    return False
             return True
         else:
             return False
@@ -77,8 +83,11 @@ class Pawn(Piece):
         dy = y - py
         direction = -1 if self.team == TeamType.ALLY else 1
         is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
-        return dx == 0 and (dy == direction or (is_in_starting_position and dy == 2 * direction)) and board.piece_at(x,
-                                                                                                                     y) is None
+        if dx == 0 and (dy == direction or (is_in_starting_position and dy == 2 * direction)) and board.piece_at(x,
+                                                                                                                 y) is None:
+            self.moved_two_steps_last_move = abs(y - py) == 2
+            return True
+        return False
 
     def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
@@ -152,3 +161,31 @@ class Pawn(Piece):
                     return True
 
         return False
+
+    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
+                             game_state: 'GameState') -> bool:
+        """
+        Determine if a square is controlled by the Pawn.
+
+        A Pawn controls the squares diagonally in front of it, depending on its color (game_state).
+
+        Parameters:
+            current_x (int): The current x-coordinate of this piece on the board.
+            current_y (int): The current y-coordinate of this piece on the board.
+            target_x (int): The x-coordinate of the proposed target square on the board.
+            target_y (int): The y-coordinate of the proposed target square on the board.
+            game_state (GameState): The current state of the chess game.
+
+        Returns:
+            bool: True if the Pawn controls the target square, False otherwise.
+        """
+        king = game_state.get_king(self.team)
+
+        if self._capturing(px=current_x, py=current_y, x=target_x, y=target_y, board=game_state.board) or \
+                self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state):
+            if game_state.checking_for_check and king.is_in_check(game_state):
+                if not self.move_protects_king(new_x=target_x, new_y=target_y, game_state=game_state):
+                    return False
+            return True
+        else:
+            return False

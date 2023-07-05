@@ -12,6 +12,8 @@ class GameState:
     Attributes:
         board (Board): A Board object representing the current state of the chess board.
         last_move (Move): A Move object used to represent the last move played on the board.
+        white_legal_moves (list[tuple[Piece, list[tuple[int, int]]]]): list of all white's legal moves
+        black_legal_moves (list[tuple[Piece, list[tuple[int, int]]]]): list of all black's legal moves
     """
 
     def __init__(self, board: Board):
@@ -21,8 +23,15 @@ class GameState:
         Args:
             board (Board): A Board object representing the current state of the chess board.
         """
+        self._white_targets = {}
+        self._black_targets = {}
         self._board = board
-        self._last_move = Move(None, (-1, -1), (-1, -1))  # Initialize with an empty move
+        self._last_move = Move(None, (-1, -1), (-1, -1), None)  # Initialize with an empty move
+
+        self._white_legal_moves = {}
+        self._black_legal_moves = {}
+        self._checking_for_check = True
+        self.update_legal_moves_and_targets()
 
     def move_piece(self, piece: Piece, new_x: int, new_y: int):
         """
@@ -40,7 +49,10 @@ class GameState:
 
         # Check if there's a piece at the new position
         other_piece = self.board.piece_at(x=new_x, y=new_y)
+        captured_piece = None  # Initialize with no captured piece
+
         if other_piece is not None and piece.can_capture_or_occupy_square(x=new_x, y=new_y, board=self.board):
+            captured_piece = other_piece  # Capture the piece
             self.board.remove(other_piece)
 
         # Handle special moves
@@ -48,12 +60,48 @@ class GameState:
         self.handle_castle_move(piece, new_x, new_y)
 
         # Keep track of this move
-        self.last_move = Move(piece, start_position=(piece.x, piece.y), end_position=(new_x, new_y))
+        self.last_move = Move(piece, start_position=(piece.x, piece.y), end_position=(new_x, new_y), captured_piece=captured_piece)
 
         # Move the piece
         piece.x = new_x
         piece.y = new_y
         piece.has_moved = True
+        self.update_legal_moves_and_targets()
+
+    def undo_move(self):
+        """
+        Undo the last move.
+        """
+        # Store the last move temporarily
+        temp_last_move = self._last_move
+
+        # Undo the move
+        piece_moved = self._last_move.piece
+        piece_moved.x, piece_moved.y = self._last_move.start_position  # Move piece back to start position
+        piece_moved.has_moved = False  # Reset moved status
+
+        # Undo castling if it was the last move
+        if isinstance(piece_moved, King) and abs(piece_moved.x - self._last_move.end_position[0]) == 2:
+            if self._last_move.end_position[0] == 2:  # queen-side castle
+                rook = self.board.piece_at(x=3, y=piece_moved.y)
+                rook.x = 0
+            else:  # king-side castle
+                rook = self.board.piece_at(x=5, y=piece_moved.y)
+                rook.x = 7
+            rook.has_moved = False  # Reset moved status
+
+        # Undo capture move
+        if self._last_move.captured_piece:
+            self._board.add(self._last_move.captured_piece)
+
+        # Reset last move
+        self._last_move = Move(None, (-1, -1), (-1, -1), None)  # Reset last move
+
+        # If the last move was an en passant, restore the last move
+        if isinstance(temp_last_move.piece, Pawn) and abs(temp_last_move.start_position[1] - temp_last_move.end_position[1]) == 2:
+            self._last_move = temp_last_move
+
+        self.update_legal_moves_and_targets()
 
     def handle_en_passant_capture(self, piece: Piece, new_x: int, new_y: int):
         """
@@ -68,6 +116,7 @@ class GameState:
         if isinstance(self.last_move.piece, Pawn) and isinstance(piece, Pawn):
             if piece.en_passant(px=piece.x, py=piece.y, x=new_x, y=new_y, game_state=self):
                 self.board.remove(self.last_move.piece)
+                # self.undo_move()
 
     def handle_castle_move(self, piece: Piece, new_x: int, new_y: int):
         """
@@ -98,12 +147,55 @@ class GameState:
         Returns:
             list[tuple[int, int]]: List of tuples where each tuple contains integer coordinates (x, y).
         """
+
         legal_moves = []
         for i in range(8):
             for j in range(8):
                 if piece.legal_move(px=piece.x, py=piece.y, x=i, y=j, game_state=self):
                     legal_moves.append((i, j))
         return legal_moves
+
+    def calculate_moves_and_squares_for_piece(self, piece: Piece) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+        """
+        Calculate the legal moves and controlled squares for a given piece and return them as lists of tuples.
+
+        Args:
+            piece (Piece): The piece to calculate for.
+
+        Returns:
+            tuple: A tuple containing two lists of tuples where each tuple contains integer coordinates (x, y).
+                The first list contains the legal moves and the second contains the controlled squares.
+        """
+
+        legal_moves = []
+        controlled_squares = []
+
+        for i in range(8):
+            for j in range(8):
+                if piece.legal_move(px=piece.x, py=piece.y, x=i, y=j, game_state=self):
+                    legal_moves.append((i, j))
+                if piece.is_controlled_square(current_x=piece.x, current_y=piece.y, target_x=i, target_y=j, game_state=self):
+                    controlled_squares.append((i, j))
+
+        return legal_moves, controlled_squares
+
+    def update_legal_moves_and_targets(self):
+        self._checking_for_check = False
+        self._white_legal_moves = {}
+        self._black_legal_moves = {}
+        self._white_targets = {}
+        self._black_targets = {}
+
+        for piece in self.board.pieces:
+            legal_moves, controlled_squares = self.calculate_moves_and_squares_for_piece(piece)
+            if piece.is_white:
+                self._white_legal_moves[piece.id] = legal_moves
+                self._white_targets[piece.id] = controlled_squares
+            else:
+                self._black_legal_moves[piece.id] = legal_moves
+                self._black_targets[piece.id] = controlled_squares
+
+        self._checking_for_check = True
 
     def get_king(self, team: TeamType) -> King:
         """
@@ -180,3 +272,23 @@ class GameState:
             move (Move): A Move object representing the last move.
         """
         self._last_move = replace(move)
+
+    @property
+    def black_legal_moves(self) -> dict[Piece, list[tuple[int, int]]]:
+        return self._black_legal_moves
+
+    @property
+    def white_legal_moves(self) -> dict[Piece, list[tuple[int, int]]]:
+        return self._white_legal_moves
+
+    @property
+    def checking_for_check(self):
+        return self._checking_for_check
+
+    @property
+    def black_targets(self) -> dict[Piece, list[tuple[int, int]]]:
+        return self._black_targets
+
+    @property
+    def white_targets(self) -> dict[Piece, list[tuple[int, int]]]:
+        return self._white_targets
