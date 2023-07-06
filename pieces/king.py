@@ -50,9 +50,13 @@ class King(Piece):
 
         Returns:
             bool: True if the move is legal, False otherwise.
-        """        
+        """
         dx = abs(x - px)
         dy = abs(y - py)
+
+        # Make sure the move doesn't place the king in check
+        if game_state.checking_for_check and self.is_move_into_check(x, y, game_state):
+            return False
 
         return self.can_castle(px, py, x, y, game_state) or \
             ((dx <= 1 and dy <= 1) and self.can_capture_or_occupy_square(x, y, board=game_state.board))
@@ -80,7 +84,7 @@ class King(Piece):
         dy = abs(y - py)
 
         if dy == 0 and dx == 2:
-            if self.has_moved:  # King cannot castle if it has moved
+            if self.has_moved or self.is_in_check(game_state):  # King cannot castle if it has moved or is in check
                 return False
 
             direction = 1 if x > px else -1  # Determine which rook to check for (king-side or queen-side)
@@ -101,5 +105,47 @@ class King(Piece):
             # Ensure there's a rook at the position, and it hasn't moved
             if isinstance(rook_piece, Rook) and not rook_piece.has_moved:
                 return True
+
+        return False
+
+    def is_move_into_check(self, x: int, y: int, game_state: 'GameState') -> bool:
+        """
+        Determine if a move places the king in check.
+
+        Args:
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            game_state (GameState): The chess game's state.
+
+        Returns:
+            bool: True if the move would place the king in check, False otherwise.
+        """
+        if self.is_white:
+            # Iterate through each list of moves in black_targets
+            for moves in game_state.black_targets.values():
+                # If the proposed move is in the legal moves of any black piece, the king is in check
+                if (x, y) in moves:
+                    return True
+        else:
+            # Similarly for white pieces
+            for moves in game_state.white_targets.values():
+                if (x, y) in moves:
+                    return True
+
+        # If no piece can legally move to the proposed coordinates, the king is not in check
+        return False
+
+    def is_in_check(self, game_state: 'GameState'):
+        if self.is_white:
+            # Iterate through each list of moves in black_targets
+            for moves in game_state.black_targets.values():
+                # If the current position is in the legal moves of any black piece, the king is in check
+                if (self.x, self.y) in moves:
+                    return True
+        else:
+            # Similarly for white pieces
+            for moves in game_state.white_targets.values():
+                if (self.x, self.y) in moves:
+                    return True
 
         return False

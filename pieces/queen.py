@@ -52,8 +52,15 @@ class Queen(Piece):
             return False
             
         if px == x or py == y:
-            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear')    
+            if self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear'):
+                if game_state.checking_for_check:
+                    if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
+                        return False
+                return True
         elif abs(x - px) == abs(y - py):
-            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal')
-            
+            if self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal'):
+                if game_state.checking_for_check:
+                    if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
+                        return False
+                return True
         return False
