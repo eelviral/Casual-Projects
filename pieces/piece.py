@@ -20,6 +20,7 @@ class Piece(ABC):
         type (PieceType): The type of the piece (e.g., PAWN, KNIGHT).
         has_moved (bool): Determines whether the piece has already moved (at least once) or not.
     """
+
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool, symbol: str, type: PieceType):
         """
         Initializes a Piece with a symbol, coordinates, type, and team.
@@ -104,7 +105,7 @@ class Piece(ABC):
         if destination_piece is None or destination_piece.is_white != self.is_white:
             return True
         return False
-    
+
     def _path_is_clear(self, px: int, py: int, x: int, y: int, board: 'Board', direction: str) -> bool:
         """
         Determines whether the path is clear in a specified direction (linear or diagonal).
@@ -160,7 +161,7 @@ class Piece(ABC):
     @staticmethod
     def __path_is_clear_linearly(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
-        Determine whether the path is clear in a straight line (horizontally or vertically) 
+        Determine whether the path is clear in a straight line (horizontally or vertically)
         between two given points. This is intended for use by the Queen and Rook subclasses.
 
         Args:
@@ -191,7 +192,7 @@ class Piece(ABC):
     def y(self) -> int:
         """Returns the y-coordinate of the piece on the board."""
         return self._y
-    
+
     @x.setter
     def x(self, value: int):
         """
@@ -224,7 +225,7 @@ class Piece(ABC):
     def team(self) -> TeamType:
         """Returns the team the piece belongs to."""
         return self._team
-    
+
     @property
     def is_white(self) -> bool:
         """
@@ -239,7 +240,7 @@ class Piece(ABC):
     def symbol(self) -> str:
         """Returns the symbol of the piece."""
         return self._symbol
-    
+
     @property
     def type(self) -> PieceType:
         """Returns the type of the piece."""
@@ -267,9 +268,9 @@ class Piece(ABC):
 
     def __repr__(self):
         """
-        Returns a developer-friendly string representation of the Piece object. 
+        Returns a developer-friendly string representation of the Piece object.
 
-        This method is mainly useful for debugging and logging. The string includes the piece's symbol, 
+        This method is mainly useful for debugging and logging. The string includes the piece's symbol,
         its x and y coordinates, its team, and whether it has moved or not.
 
         Returns:
@@ -277,4 +278,3 @@ class Piece(ABC):
         """
         team = "White" if self.is_white else "Black"
         return f"Piece({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
-

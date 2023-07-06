@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 class Queen(Piece):
     """
     Represents a Queen piece in a chess game. Inherits from the Piece class.
-    
+
     The Queen class is a subclass of the Piece class, with a specific type of PieceType.QUEEN.
-    
+
     Attributes:
         x (int): The x-coordinate of the piece on the board.
         y (int): The y-coordinate of the piece on the board.
@@ -20,7 +20,7 @@ class Queen(Piece):
         symbol (str): The character symbol representing the piece (e.g., 'Q', 'q').
         type (PieceType): The type of the piece (QUEEN).
     """
-    
+
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
         Initializes a Queen with a team, symbol, and coordinates.
@@ -33,7 +33,7 @@ class Queen(Piece):
         """
         symbol = 'Q' if is_white else 'q'
         super().__init__(x, y, team, is_white, symbol, PieceType.QUEEN)
-    
+
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a Queen's move is legal.
@@ -50,17 +50,10 @@ class Queen(Piece):
         """
         if not self.can_capture_or_occupy_square(x, y, board=game_state.board):
             return False
-            
+
         if px == x or py == y:
-            if self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear'):
-                if game_state.checking_for_check:
-                    if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
-                        return False
-                return True
+            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='linear')
         elif abs(x - px) == abs(y - py):
-            if self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal'):
-                if game_state.checking_for_check:
-                    if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
-                        return False
-                return True
+            return self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal')
+
         return False

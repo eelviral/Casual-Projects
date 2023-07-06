@@ -1,9 +1,6 @@
 from typing import Iterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pieces import Piece
+from pieces import Piece
 
 
 @dataclass(frozen=True)
@@ -20,12 +17,11 @@ class Move:
         end_position (tuple[int, int]): A tuple representing the end position of a piece's move on the board.
         It contains two integers: the x-coordinate (row index) and the y-coordinate (column index).
     """
-    piece: 'Piece' or None
+    piece: Piece or None
     start_position: tuple[int, int]
     end_position: tuple[int, int]
-    captured_piece: 'Piece' or None
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Piece | None | tuple[int, int]]:
         """
         Allows instances to be unpacked into piece, start position, and end position.
         """

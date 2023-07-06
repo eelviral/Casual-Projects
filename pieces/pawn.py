@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 class Pawn(Piece):
     """
     Represents a Pawn piece in a chess game. Inherits from the Piece class.
-    
+
     The Pawn class is a subclass of the Piece class, with a specific type of PieceType.PAWN.
-    
+
     Attributes:
         x (int): The x-coordinate of the piece on the board.
         y (int): The y-coordinate of the piece on the board.
@@ -60,7 +60,7 @@ class Pawn(Piece):
         """
         Check if the pawn is moving forward.
 
-        The pawn moves straight forward one square, with the option to move two squares 
+        The pawn moves straight forward one square, with the option to move two squares
         if it has not yet moved (pawn's first move). The pawn can't jump over pieces.
 
         Args:
@@ -82,7 +82,7 @@ class Pawn(Piece):
             return True
         elif dx == 0 and is_in_starting_position and dy == 2 * direction and board.piece_at(x,
                                                                                             y) is None and board.piece_at(
-                px, py + direction) is None:
+            px, py + direction) is None:
             return True
         else:
             return False
@@ -91,8 +91,8 @@ class Pawn(Piece):
         """
         Check if the pawn is capturing an opponent's piece.
 
-        The pawn can capture an enemy piece on either of the two spaces adjacent to 
-        the space in front of it (diagonal forward), but cannot move to these spaces 
+        The pawn can capture an enemy piece on either of the two spaces adjacent to
+        the space in front of it (diagonal forward), but cannot move to these spaces
         if they are vacant.
 
         Args:
@@ -115,8 +115,8 @@ class Pawn(Piece):
         """
         Check if the pawn is capturing by "en passant".
 
-        En passant is a special pawn capture that can only occur immediately after a pawn 
-        moves two ranks forward from its starting position. The opponent captures the 
+        En passant is a special pawn capture that can only occur immediately after a pawn
+        moves two ranks forward from its starting position. The opponent captures the
         just-moved pawn "as it passes" through the first square.
 
         Args:

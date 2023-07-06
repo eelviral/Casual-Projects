@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 class Bishop(Piece):
     """
     Represents a Bishop piece in a chess game. Inherits from the Piece class.
-    
+
     The Bishop class is a subclass of the Piece class, with a specific type of PieceType.BISHOP.
-    
+
     Attributes:
         x (int): The x-coordinate of the piece on the board.
         y (int): The y-coordinate of the piece on the board.
@@ -20,7 +20,7 @@ class Bishop(Piece):
         symbol (str): The character symbol representing the piece (e.g., 'B', 'b').
         type (PieceType): The type of the piece (BISHOP).
     """
-    
+
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
         Initializes a Bishop with a team, symbol, and coordinates.
@@ -33,7 +33,7 @@ class Bishop(Piece):
         """
         symbol = 'B' if is_white else 'b'
         super().__init__(x, y, team, is_white, symbol, PieceType.BISHOP)
-        
+
     def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
         Determine if a Bishop's move is legal.
@@ -48,13 +48,7 @@ class Bishop(Piece):
         Returns:
             bool: True if the move is legal, False otherwise.
         """
-        if not self.can_capture_or_occupy_square(x, y, board=game_state.board):
-            return False
-
         if abs(x - px) == abs(y - py):
             if self._path_is_clear(px, py, x, y, board=game_state.board, direction='diagonal'):
-                if game_state.checking_for_check:
-                    if not self.move_protects_king(new_x=x, new_y=y, game_state=game_state):
-                        return False
-                return True
+                return self.can_capture_or_occupy_square(x, y, board=game_state.board)
         return False

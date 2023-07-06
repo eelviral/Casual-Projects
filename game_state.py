@@ -54,7 +54,7 @@ class GameState:
 
         # Move is legal, so finalize it
         if other_piece is not None and piece.can_capture_or_occupy_square(x=original_x, y=original_y, board=self.board):
-            self.board.remove(other_piece)       
+            self.board.remove(other_piece)
 
         self.last_move = Move(piece, start_position=(original_x, original_y), end_position=(new_x, new_y))
         piece.has_moved = True
@@ -112,7 +112,7 @@ class GameState:
                 # If the move is legal and either the king is not in check or the move protects the king
                 if piece.legal_move(px=piece.x, py=piece.y, x=i, y=j, game_state=self):
                     possible_moves.append((i, j))
-                    
+
         for x, y in possible_moves:
             # Create a temporary copy of the game state and make the move
             temp_state = self.copy()
@@ -121,7 +121,7 @@ class GameState:
             # If the move results in a successful move and doesn't cause a check, add it to the legal moves
             if temp_state.move_piece(piece=temp_piece, new_x=x, new_y=y) and not temp_state.is_in_check(piece.team):
                 legal_moves.append((x, y))
-                
+
         return legal_moves
 
     def get_king(self, team: TeamType) -> King:
@@ -137,7 +137,7 @@ class GameState:
         for piece in self.board.pieces:
             if isinstance(piece, King) and piece.team == team:
                 return piece
-            
+
     def is_in_check(self, team: TeamType):
         """
         Check if a king is in check.
@@ -161,7 +161,7 @@ class GameState:
         """
         Checks if a proposed move would result in the current player's King being in check.
 
-        The method creates a temporary copy of the game state, makes the proposed move in this copied game state, 
+        The method creates a temporary copy of the game state, makes the proposed move in this copied game state,
         and then checks if the resulting state would put the King in check. The real game state remains unaffected.
 
         Args:
@@ -210,7 +210,7 @@ class GameState:
         self.board.remove(piece)
         new_piece = promotion_piece(x=piece.x, y=piece.y, team=piece.team, is_white=piece.is_white)
         self.board.add(new_piece)
-        
+
     def copy(self):
         """Creates a deep copy of the game state."""
         new_game_state = copy.deepcopy(self)

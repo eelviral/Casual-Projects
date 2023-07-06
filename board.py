@@ -19,7 +19,7 @@ class Board:
         """
         self._pieces = []
         self._initialize_board()
-    
+
     def _initialize_board(self):
         """
         Populates the board with chess pieces in their initial positions.
@@ -27,7 +27,7 @@ class Board:
         The method creates objects of various piece types (Rook, Knight, Bishop, Queen, King, and Pawn)
         and places them on the board as per the traditional setup of a chess game.
 
-        The board is represented as a list of Piece objects, with each object storing information 
+        The board is represented as a list of Piece objects, with each object storing information
         about the type of the piece, its location on the board, the team it belongs to, and its color.
         """
         # Add non-pawn pieces
@@ -75,7 +75,7 @@ class Board:
             piece (Piece): The piece to be added to the board.
         """
         self.pieces.append(piece)
-        
+
     def remove(self, piece: Piece):
         """
         Removes a piece from the board.
@@ -84,17 +84,17 @@ class Board:
             piece (Piece): The piece to be removed from the board.
         """
         self.pieces.remove(piece)
-        
+
     @property
     def pieces(self) -> list[Piece]:
         """
         Returns the list of Piece objects representing the current state of the chess board.
-        
+
         Returns:
             list: A list of Piece objects.
         """
         return self._pieces
-    
+
     def __getitem__(self, index: int) -> Piece:
         """
         Returns the Piece object at the given index in the board list.
@@ -116,7 +116,7 @@ class Board:
 
         Returns:
             list: If name is "board", returns the list of pieces on the board.
-            
+
         Raises:
             AttributeError: If name is not "board".
         """
