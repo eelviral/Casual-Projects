@@ -20,7 +20,6 @@ class Piece(ABC):
         type (PieceType): The type of the piece (e.g., PAWN, KNIGHT).
         has_moved (bool): Determines whether the piece has already moved (at least once) or not.
     """
-    
     def __init__(self, x: int, y: int, team: TeamType, is_white: bool, symbol: str, type: PieceType):
         """
         Initializes a Piece with a symbol, coordinates, type, and team.
@@ -63,6 +62,30 @@ class Piece(ABC):
             NotImplementedError: If this method is not overridden in a subclass.
         """
         raise NotImplementedError()
+
+    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
+                             game_state: 'GameState') -> bool:
+        """
+        Determines whether a proposed move to a target square on the chessboard is controlled by this piece.
+
+        This method serves as a base for all piece-specific methods to follow and is designed to be overridden in
+        subclasses. The specific rules for each piece, such as movement/capture patterns, obstructions on the path,
+        and special game state requirements, should be considered in the overriding methods.
+
+        Parameters:
+            current_x (int): The current x-coordinate of this piece on the board.
+            current_y (int): The current y-coordinate of this piece on the board.
+            target_x (int): The x-coordinate of the proposed target square on the board.
+            target_y (int): The y-coordinate of the proposed target square on the board.
+            game_state (GameState): The current state of the chess game.
+
+        Returns:
+            bool: True if the proposed target square is controlled by this piece according to its specific rules;
+                  False otherwise.
+        """
+        # This is a placeholder implementation that simply checks whether a legal move to the target square is possible.
+        # Subclasses should override this method to implement more accurate rules for each piece if necessary.
+        return self.legal_move(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
 
     def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
         """

@@ -28,4 +28,3 @@ class Move:
         yield self.piece
         yield self.start_position
         yield self.end_position
-

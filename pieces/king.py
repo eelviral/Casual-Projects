@@ -90,6 +90,11 @@ class King(Piece):
                 if game_state.board.piece_at(px + i * direction, py) is not None:
                     return False
 
+                # The squares that the king moves across must not be under attack
+                if any(other_piece.is_controlled_square(other_piece.x, other_piece.y, px + i * direction, py, game_state) 
+                    for other_piece in game_state.board.pieces if other_piece.team != self.team):
+                    return False
+
             rook_position = (7 if direction == 1 else 0, py)
             rook_piece = game_state.board.piece_at(rook_position[0], rook_position[1])
 

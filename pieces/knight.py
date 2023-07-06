@@ -50,4 +50,6 @@ class Knight(Piece):
         """
         dx = abs(x - px)
         dy = abs(y - py)
-        return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and self.can_capture_or_occupy_square(x, y, board=game_state.board)
+        return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and \
+            self.can_capture_or_occupy_square(x, y, board=game_state.board)
+    

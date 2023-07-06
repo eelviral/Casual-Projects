@@ -59,7 +59,7 @@ class Pawn(Piece):
     def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
         Check if the pawn is moving forward.
-        
+
         The pawn moves straight forward one square, with the option to move two squares 
         if it has not yet moved (pawn's first move). The pawn can't jump over pieces.
 
@@ -77,8 +77,15 @@ class Pawn(Piece):
         dy = y - py
         direction = -1 if self.team == TeamType.ALLY else 1
         is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
-        return dx == 0 and (dy == direction or (is_in_starting_position and dy == 2 * direction)) and board.piece_at(x,
-                                                                                                                     y) is None
+
+        if dx == 0 and dy == direction and board.piece_at(x, y) is None:
+            return True
+        elif dx == 0 and is_in_starting_position and dy == 2 * direction and board.piece_at(x,
+                                                                                            y) is None and board.piece_at(
+                px, py + direction) is None:
+            return True
+        else:
+            return False
 
     def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """
@@ -152,3 +159,23 @@ class Pawn(Piece):
                     return True
 
         return False
+
+    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
+                             game_state: 'GameState') -> bool:
+        """
+        Determine if a square is controlled by the Pawn.
+
+        A Pawn controls the squares diagonally in front of it, depending on its color (game_state).
+
+        Parameters:
+            current_x (int): The current x-coordinate of this piece on the board.
+            current_y (int): The current y-coordinate of this piece on the board.
+            target_x (int): The x-coordinate of the proposed target square on the board.
+            target_y (int): The y-coordinate of the proposed target square on the board.
+            game_state (GameState): The current state of the chess game.
+
+        Returns:
+            bool: True if the Pawn controls the target square, False otherwise.
+        """
+        return self._capturing(px=current_x, py=current_y, x=target_x, y=target_y, board=game_state.board) or \
+            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
