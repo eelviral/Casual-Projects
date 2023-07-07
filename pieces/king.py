@@ -59,38 +59,40 @@ class King(Piece):
 
     def can_castle(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
-        Determines if a castling move is possible for the King.
+        Checks if the King can perform a castling move in chess.
 
-        Castling is a special move in chess involving the King and one of the rooks of the same color.
-        It is the only move that allows a player to move two pieces in the same move. Castling can only be done
-        if the King has never moved, the Rook involved has never moved, the squares between them are not occupied,
-        the King is not in check, and the King does not pass through or land on a square that is attacked by an enemy piece.
+        Castling is a special move involving the King and one of the rooks of the same color,
+        where both are moved in a single turn. It can only occur if neither piece has moved before,
+        no pieces are between them, the King isn't in check, and the squares the King crosses
+        or lands on aren't under attack.
+
+        Note: This method assumes that the king is not in check
 
         Parameters:
-            px (int): The current x-coordinate of the King.
-            py (int): The current y-coordinate of the King.
-            x (int): The x-coordinate of the proposed move.
-            y (int): The y-coordinate of the proposed move.
-            game_state (GameState): The current state of the game.
+            px (int): Current x-coordinate of the King.
+            py (int): Current y-coordinate of the King.
+            x (int): X-coordinate of the intended move.
+            y (int): Y-coordinate of the intended move.
+            game_state (GameState): Current state of the game.
 
         Returns:
-            bool: True if castling is allowed, False otherwise.
+            bool: True if the King can castle, False otherwise.
         """
         dx = abs(x - px)
         dy = abs(y - py)
 
         if dy == 0 and dx == 2:
-            if self.has_moved:  # King cannot castle if it has moved
+            if self.has_moved:
                 return False
 
-            direction = 1 if x > px else -1  # Determine which rook to check for (king-side or queen-side)
+            direction = 1 if x > px else -1  # Defines which rook to check
 
             for i in range(1, dx):
-                # No pieces can be between the king and rook
+                # Checks for pieces between the King and rook
                 if game_state.board.piece_at(px + i * direction, py) is not None:
                     return False
 
-                # The squares that the king moves across must not be under attack
+                # Verifies the King isn't crossing or landing on attacked squares
                 if any(other_piece.is_controlled_square(other_piece.x, other_piece.y, px + i * direction, py,
                                                         game_state)
                        for other_piece in game_state.board.pieces if other_piece.team != self.team):
@@ -99,7 +101,7 @@ class King(Piece):
             rook_position = (7 if direction == 1 else 0, py)
             rook_piece = game_state.board.piece_at(rook_position[0], rook_position[1])
 
-            # Ensure there's a rook at the position, and it hasn't moved
+            # Confirms there's an unmoved rook at the position
             if isinstance(rook_piece, Rook) and not rook_piece.has_moved:
                 return True
 
