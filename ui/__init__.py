@@ -1,4 +1,5 @@
+from ui.chess_ui import ChessUI
 from ui.click_handler import ClickHandler
 from ui.promotion_ui import PromotionUI
 
-__all__ = ['ClickHandler', 'PromotionUI']
+__all__ = ['ChessUI', 'ClickHandler', 'PromotionUI']

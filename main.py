@@ -4,11 +4,10 @@
 # Date_Created: Monday, March 7, 2022 at 05:51 UTC
 
 
-from board import Board
-from game_state import GameState
+from engine import GameState, Board
 # from player import Human, Computer
-# from ai import find_best_move
-from ui.chess_ui import ChessUI
+# from AI import find_best_move
+from ui import ChessUI
 
 
 class Main:

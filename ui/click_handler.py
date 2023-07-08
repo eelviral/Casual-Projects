@@ -3,7 +3,7 @@ from ui.promotion_ui import PromotionUI
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from chess_ui import ChessUI
+    from ui import ChessUI
     
     
 class ClickHandler:
@@ -22,6 +22,8 @@ class ClickHandler:
             chess_ui (ChessUI): The chess user interface instance this handler is bound to.
         """
         self.chess_ui = chess_ui
+        self.board = chess_ui.game_state.board
+        self.game_engine = chess_ui.game_state.game_engine
 
     def handle_click(self, event: tk.Event):
         """
@@ -36,7 +38,7 @@ class ClickHandler:
         if chess_ui.first_click is None:
             x = (event.x - 50) // 100
             y = (event.y - 50) // 100
-            piece = chess_ui.game_state.board.piece_at(x, y)
+            piece = self.board.piece_at(x, y)
             if piece is not None:
                 chess_ui.first_click = (x, y)
                 chess_ui.selected_piece = piece
@@ -45,13 +47,13 @@ class ClickHandler:
             x, y = chess_ui.first_click
             new_x = (event.x - 50) // 100
             new_y = (event.y - 50) // 100
-            piece = chess_ui.game_state.board.piece_at(x, y)
+            piece = self.board.piece_at(x, y)
             chess_ui.first_click = None
 
             if (new_x, new_y) in chess_ui.legal_moves:
-                chess_ui.game_state.move_piece(piece, new_x, new_y)
+                self.game_engine.move_piece(piece, new_x, new_y)
                 
-                if chess_ui.game_state.is_promotion():
+                if self.game_engine.is_promotion():
                     PromotionUI(chess_ui=chess_ui, pawn=piece)
                     
             chess_ui.selected_piece = None

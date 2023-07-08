@@ -1,7 +1,7 @@
 import tkinter as tk
-from game_state import GameState
+from engine import GameState
 from pieces import Piece
-from ui import *
+from ui.click_handler import ClickHandler
 
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
@@ -50,7 +50,7 @@ class ChessUI:
         Args:
             piece (Piece): The piece to calculate legal moves for.
         """
-        self.legal_moves = self.game_state.calculate_legal_moves_for_piece(piece)
+        self.legal_moves = self.game_state.move_generator.calculate_legal_moves_for_piece(piece)
         self.update()  # Update immediately after calculating legal moves
 
     @staticmethod
@@ -91,8 +91,7 @@ class ChessUI:
 
     def draw_pieces(self):
         """Draw the chess pieces on the board using the images loaded previously."""
-        board = self.game_state.board
-        for piece in board:
+        for piece in self.game_state.board:
             if piece is not None:
                 x = (piece.x + 0.5) * 100 + 50
                 y = (piece.y + 0.5) * 100 + 50

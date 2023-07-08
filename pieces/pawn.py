@@ -1,10 +1,9 @@
 from pieces import Piece
-from type import PieceType, TeamType
+from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from board import Board
-    from game_state import GameState
+    from engine import GameState, GameEngine, Board
 
 
 class Pawn(Piece):
@@ -51,7 +50,7 @@ class Pawn(Piece):
         """
         if self._moving_forward(px, py, x, y, board=game_state.board) or \
                 self._capturing(px, py, x, y, board=game_state.board) or \
-                self.en_passant(px, py, x, y, game_state):
+                self.en_passant(px, py, x, y, game_state.game_engine):
             return True
         else:
             return False
@@ -111,7 +110,7 @@ class Pawn(Piece):
         return (abs(dx) == 1 and dy == direction) and \
             (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))
 
-    def en_passant(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def en_passant(self, px: int, py: int, x: int, y: int, game_engine: 'GameEngine') -> bool:
         """
         Check if the pawn is capturing by "en passant".
 
@@ -120,12 +119,11 @@ class Pawn(Piece):
         just-moved pawn "as it passes" through the first square.
 
         Args:
-
             px (int): The current x-coordinate of the pawn.
             py (int): The current y-coordinate of the pawn.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+            game_engine: (GameEngine): The chess game's engine.
 
         Returns:
             bool: True if the pawn is capturing by "en passant", False otherwise.
@@ -135,7 +133,7 @@ class Pawn(Piece):
         direction = -1 if self.team == TeamType.ALLY else 1
         capture_rank = 3 if self.team == TeamType.ALLY else 4  # Decide the capture rank based on team
 
-        last_move = game_state.last_move
+        last_move = game_engine.last_move
         if last_move is None:
             return False
 
@@ -178,4 +176,4 @@ class Pawn(Piece):
             bool: True if the Pawn controls the target square, False otherwise.
         """
         return self._capturing(px=current_x, py=current_y, x=target_x, y=target_y, board=game_state.board) or \
-            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
+            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=game_state.game_engine)

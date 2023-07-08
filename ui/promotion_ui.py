@@ -4,7 +4,7 @@ from utils import piece_classes
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from chess_ui import ChessUI
+    from ui import ChessUI
 
 
 class PromotionUI:

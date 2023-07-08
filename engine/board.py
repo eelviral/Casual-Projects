@@ -1,4 +1,4 @@
-from type import TeamType
+from utils.type import TeamType
 from pieces import *
 
 
@@ -66,6 +66,20 @@ class Board:
             if piece.x == x and piece.y == y:
                 return piece
         return None
+
+    def get_king(self, team: TeamType) -> King:
+        """
+        Returns the king piece of the given team.
+
+        Args:
+            team (TeamType): The team whose king to return.
+
+        Returns:
+            King: The king of the given team.
+        """
+        for piece in self.pieces:
+            if isinstance(piece, King) and piece.team == team:
+                return piece
 
     def add(self, piece: Piece):
         """

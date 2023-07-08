@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from type import PieceType, TeamType
+from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from board import Board
-    from game_state import GameState
+    from engine import GameState, Board
 
 
 class Piece(ABC):

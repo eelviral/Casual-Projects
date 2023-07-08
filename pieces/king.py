@@ -1,10 +1,10 @@
 from pieces import Piece
 from pieces.rook import Rook
-from type import PieceType, TeamType
+from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game_state import GameState
+    from engine.game_state import GameState
 
 
 class King(Piece):
