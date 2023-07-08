@@ -1,3 +1,4 @@
+from collections import Counter
 from utils import TeamType
 from typing import TYPE_CHECKING
 
@@ -26,6 +27,7 @@ class GameStatus:
         self.game_state = game_state
         self.board = game_state.board
         self.move_generator = game_state.move_generator
+        self.positions = []
 
     def is_in_check(self, team: TeamType):
         """
@@ -68,3 +70,39 @@ class GameStatus:
 
         # If there are no such moves, the king is in checkmate
         return True
+
+    def is_in_stalemate(self, team: TeamType) -> bool:
+        """
+        Checks if the king of a given team is in stalemate.
+
+        Args:
+            team (TeamType): The team of the king to check.
+
+        Returns:
+            bool: True if the king is in stalemate, False otherwise.
+        """
+        if self.is_threefold_repetition():
+            return True
+
+        # First, check if the king is NOT in check
+        if self.is_in_check(team):
+            return False
+
+        # Then, check if there are any legal moves left for any piece of the team
+        for piece in self.board.pieces:
+            if piece.team == team:
+                if self.move_generator.calculate_legal_moves_for_piece(piece):
+                    return False
+
+        # If there are no such moves and the king is not in check, it is stalemate
+        return True
+
+    def is_threefold_repetition(self) -> bool:
+        """
+        Checks if the current position has occurred three times in the game.
+
+        Returns:
+            bool: True if the current position has occurred three times, False otherwise.
+        """
+        positions_counter = Counter(self.positions)
+        return positions_counter[self.board.fen()] >= 3

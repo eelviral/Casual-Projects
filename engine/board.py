@@ -108,6 +108,59 @@ class Board:
         """
         self.pieces.remove(piece)
 
+    def fen(self):
+        """
+        Returns the Forsyth-Edwards Notation (FEN) representation of the current board state.
+
+        Note: For the purposes of this method, it is assumed that the board state reflects the
+        starting position of a game. Therefore, it is always white's turn, all castling options
+        are available, there's no en passant target square, the halfmove clock is at zero,
+        and it is the first full move.
+
+        Returns:
+            str: The FEN representation of the current board state.
+        """
+        fen_parts = []
+
+        # 1. Piece placement
+        for y in range(7, -1, -1):  # 8 to 1
+            empty_squares = 0
+            fen_rank = ''
+            for x in range(8):  # a to h
+                piece = self.piece_at(x, y)
+                if piece:
+                    if empty_squares:
+                        fen_rank += str(empty_squares)
+                        empty_squares = 0
+
+                    fen_rank += piece.symbol
+                else:
+                    empty_squares += 1
+
+            if empty_squares:
+                fen_rank += str(empty_squares)
+
+            fen_parts.append(fen_rank)
+
+        fen_string = '/'.join(fen_parts)
+
+        # 2. Active color
+        fen_string += ' w'  # Assuming it's always white's turn
+
+        # 3. Castling availability
+        fen_string += ' KQkq'  # Assuming all sides can castle
+
+        # 4. En passant target square
+        fen_string += ' -'  # Assuming there's no en passant target square
+
+        # 5. Half-move clock
+        fen_string += ' 0'  # Assuming no half-move
+
+        # 6. Full-move number
+        fen_string += ' 1'  # Assuming it's the first move
+
+        return fen_string
+
     def _initialize_board(self):
         """
         Populates the board with chess pieces in their initial positions.

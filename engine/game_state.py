@@ -76,10 +76,12 @@ class GameState:
             GameEvent: The calculated game event.
         """
         enemy_team = TeamType.OPPONENT if piece_moved.team == TeamType.ALLY else TeamType.ALLY
-        if self.game_status.is_in_check(enemy_team):
-            return GameEvent.CHECK
-        elif self.game_status.is_in_checkmate(enemy_team):
+        if self.game_status.is_in_checkmate(enemy_team):
             return GameEvent.CHECKMATE
+        elif self.game_status.is_in_check(enemy_team):
+            return GameEvent.CHECK
+        elif self.game_status.is_in_stalemate(enemy_team):
+            return GameEvent.STALEMATE
         elif self.event == GameEvent.CAPTURE:
             return self.event
         elif self.event == GameEvent.CASTLE:

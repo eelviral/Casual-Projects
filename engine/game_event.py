@@ -11,6 +11,7 @@ class GameEvent(Enum):
     PROMOTION: Represents pawn promotion.
     NOTIFICATION: Represents a game notification.
     CHECK: Represents a check.
+    STALEMATE: Represents a stalemate.
     CHECKMATE: Represents a checkmate.
     """
     MOVE = 'move'
@@ -19,5 +20,6 @@ class GameEvent(Enum):
     PROMOTION = 'promotion'
     NOTIFICATION = 'notification'
     CHECK = 'check'
+    STALEMATE = 'stalemate'
     CHECKMATE = 'checkmate'
 

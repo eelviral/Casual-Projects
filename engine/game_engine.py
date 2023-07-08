@@ -89,6 +89,7 @@ class GameEngine:
 
         self.last_move = Move(piece, start_position=(original_x, original_y), end_position=(new_x, new_y))
         piece.has_moved = True
+        self.game_state.game_status.positions.append(self.board.fen())
         return True
 
     def handle_en_passant_capture(self, piece: Piece, new_x: int, new_y: int):
