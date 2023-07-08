@@ -1,8 +1,12 @@
 import copy
+
+from engine.game_event import GameEvent
 from engine.board import Board
 from engine.game_engine import GameEngine
 from engine.game_status import GameStatus
 from engine.move_generator import MoveGenerator
+from pieces import Piece
+from utils import TeamType
 
 
 class GameState:
@@ -15,6 +19,7 @@ class GameState:
 
     Attributes:
         board (Board): A Board object representing the current state of the chess board.
+        event (GameEvent): A GameEvent enum representing an event in the game.
         move_generator (MoveGenerator): A MoveGenerator object to calculate possible moves.
         game_engine (GameEngine): A GameEngine object to handle the rules of the game.
         game_status (GameStatus): A GameStatus object to monitor the status of the game.
@@ -28,13 +33,14 @@ class GameState:
             board (Board): A Board object representing the current state of the chess board.
         """
         self._board = board
+        self._event = None
 
         self._move_generator = MoveGenerator(self)
         self._game_engine = GameEngine(self)
         self._game_status = GameStatus(self)
 
     @property
-    def board(self):
+    def board(self) -> Board:
         """
         Provides the current state of the chess board. The state includes the positions and
         types of all pieces on the board.
@@ -43,6 +49,30 @@ class GameState:
             Board: A Board object representing the current chess board configuration.
         """
         return self._board
+
+    @property
+    def event(self) -> GameEvent:
+        return self._event
+
+    @event.setter
+    def event(self, e: GameEvent):
+        self._event = e
+
+    def get_state(self, piece_moved: Piece) -> GameEvent:
+        enemy_team = TeamType.OPPONENT if piece_moved.team == TeamType.ALLY else TeamType.ALLY
+        if self.game_status.is_in_check(enemy_team):
+            return GameEvent.CHECK
+        elif self.game_status.is_in_checkmate(enemy_team):
+            return GameEvent.CHECKMATE
+        elif self.event == GameEvent.CAPTURE:
+            return self.event
+        elif self.event == GameEvent.CASTLE:
+            return self.event
+        elif self.game_engine.is_promotion():
+            # Promotion events are activated only after a piece is selected in PromotionUI
+            # For now, the game determines this to be a regular move
+            return self.event
+        return GameEvent.MOVE
 
     @property
     def move_generator(self):

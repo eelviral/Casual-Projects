@@ -3,6 +3,7 @@ from engine.board import Board
 from engine.game_engine import GameEngine
 from engine.game_status import GameStatus
 from engine.move_generator import MoveGenerator
+from engine.game_event import GameEvent
 from engine.move import Move
 
-__all__ = ['GameState', 'Board', 'GameEngine', 'GameStatus', 'MoveGenerator', 'Move']
+__all__ = ['GameState', 'Board', 'GameEngine', 'GameStatus', 'MoveGenerator', 'GameEvent', 'Move']

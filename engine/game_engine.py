@@ -2,6 +2,7 @@ from dataclasses import replace
 from pieces import Piece, Pawn, King, Rook
 from utils import TeamType
 from engine.move import Move
+from engine.game_event import GameEvent
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -64,6 +65,8 @@ class GameEngine:
         Returns:
             bool: True if the move is successful, False otherwise.
         """
+        self.game_state.event = None  # reset game event
+
         # Do not proceed with non-legal moves
         if not piece.legal_move(px=piece.x, py=piece.y, x=new_x, y=new_y, game_state=self.game_state):
             return False
@@ -82,6 +85,7 @@ class GameEngine:
         # Move is legal, so finalize it
         if other_piece is not None and piece.can_capture_or_occupy_square(x=original_x, y=original_y, board=self.board):
             self.board.remove(other_piece)
+            self.game_state.event = GameEvent.CAPTURE
 
         self.last_move = Move(piece, start_position=(original_x, original_y), end_position=(new_x, new_y))
         piece.has_moved = True
@@ -100,6 +104,7 @@ class GameEngine:
         if isinstance(self.last_move.piece, Pawn) and isinstance(piece, Pawn):
             if piece.en_passant(px=piece.x, py=piece.y, x=new_x, y=new_y, game_engine=self):
                 self.board.remove(self.last_move.piece)
+                self.game_state.event = GameEvent.CAPTURE
 
     def handle_castle_move(self, piece: Piece, new_x: int, new_y: int):
         """
@@ -119,6 +124,7 @@ class GameEngine:
                 rook_new_x = 3 if new_x < piece.x else 5
                 rook.x = rook_new_x
                 rook.has_moved = True
+                self.game_state.event = GameEvent.CASTLE
 
     def is_promotion(self):
         """
