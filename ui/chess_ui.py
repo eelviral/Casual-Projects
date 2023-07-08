@@ -29,9 +29,15 @@ class ChessUI:
             game_state (GameState): The current state of the game.
         """
         self.game_state = game_state
+
+        # Initialize screen
         self.root = tk.Tk()
         self.canvas = tk.Canvas(self.root, width=900, height=900)
         self.canvas.pack()
+
+        # Set the window icon and title
+        self.root.iconbitmap('images/ico/chess-icon.ico')
+        self.root.title("Chess")
 
         # Load images
         self.images = self.__load_images()

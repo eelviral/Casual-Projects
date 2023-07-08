@@ -55,61 +55,6 @@ class Pawn(Piece):
         else:
             return False
 
-    def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
-        """
-        Check if the pawn is moving forward.
-
-        The pawn moves straight forward one square, with the option to move two squares
-        if it has not yet moved (pawn's first move). The pawn can't jump over pieces.
-
-        Args:
-            px (int): The current x-coordinate of the pawn.
-            py (int): The current y-coordinate of the pawn.
-            x (int): The x-coordinate of the proposed move destination.
-            y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
-
-        Returns:
-            bool: True if the pawn is moving forward correctly, False otherwise.
-        """
-        dx = x - px
-        dy = y - py
-        direction = -1 if self.team == TeamType.ALLY else 1
-        is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
-
-        if dx == 0 and dy == direction and board.piece_at(x, y) is None:
-            return True
-        elif dx == 0 and is_in_starting_position and dy == 2 * direction and board.piece_at(x,
-                                                                                            y) is None and board.piece_at(
-            px, py + direction) is None:
-            return True
-        else:
-            return False
-
-    def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
-        """
-        Check if the pawn is capturing an opponent's piece.
-
-        The pawn can capture an enemy piece on either of the two spaces adjacent to
-        the space in front of it (diagonal forward), but cannot move to these spaces
-        if they are vacant.
-
-        Args:
-            px (int): The current x-coordinate of the pawn.
-            py (int): The current y-coordinate of the pawn.
-            x (int): The x-coordinate of the proposed move destination.
-            y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
-
-        Returns:
-            bool: True if the pawn is capturing correctly, False otherwise.
-        """
-        dx = x - px
-        dy = y - py
-        direction = -1 if self.team == TeamType.ALLY else 1
-        return (abs(dx) == 1 and dy == direction) and \
-            (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))
-
     def en_passant(self, px: int, py: int, x: int, y: int, game_engine: 'GameEngine') -> bool:
         """
         Check if the pawn is capturing by "en passant".
@@ -177,3 +122,57 @@ class Pawn(Piece):
         """
         return self._capturing(px=current_x, py=current_y, x=target_x, y=target_y, board=game_state.board) or \
             self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=game_state.game_engine)
+
+    def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Check if the pawn is moving forward.
+
+        The pawn moves straight forward one square, with the option to move two squares
+        if it has not yet moved (pawn's first move). The pawn can't jump over pieces.
+
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the pawn is moving forward correctly, False otherwise.
+        """
+        dx = x - px
+        dy = y - py
+        direction = -1 if self.team == TeamType.ALLY else 1
+        is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
+
+        if dx == 0 and dy == direction and board.piece_at(x, y) is None:
+            return True
+        elif dx == 0 and is_in_starting_position and dy == 2 * direction and \
+                board.piece_at(x, y) is None and board.piece_at(px, py + direction) is None:
+            return True
+        else:
+            return False
+
+    def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Check if the pawn is capturing an opponent's piece.
+
+        The pawn can capture an enemy piece on either of the two spaces adjacent to
+        the space in front of it (diagonal forward), but cannot move to these spaces
+        if they are vacant.
+
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the pawn is capturing correctly, False otherwise.
+        """
+        dx = x - px
+        dy = y - py
+        direction = -1 if self.team == TeamType.ALLY else 1
+        return (abs(dx) == 1 and dy == direction) and \
+            (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))

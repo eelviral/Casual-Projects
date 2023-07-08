@@ -2,6 +2,17 @@ from enum import Enum
 
 
 class GameEvent(Enum):
+    """
+    Enumerates different events that can occur in a chess game.
+
+    MOVE: Represents a standard piece move.
+    CAPTURE: Represents a piece capture.
+    CASTLE: Represents castling.
+    PROMOTION: Represents pawn promotion.
+    NOTIFICATION: Represents a game notification.
+    CHECK: Represents a check.
+    CHECKMATE: Represents a checkmate.
+    """
     MOVE = 'move'
     CAPTURE = 'capture'
     CASTLE = 'castle'
@@ -9,3 +20,4 @@ class GameEvent(Enum):
     NOTIFICATION = 'notification'
     CHECK = 'check'
     CHECKMATE = 'checkmate'
+

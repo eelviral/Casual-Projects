@@ -12,19 +12,22 @@ if TYPE_CHECKING:
 
 class PromotionUI:
     """
-    Handles the pawn promotion UI in the chess game.
+    Handles the pawn promotion user interface (UI) in the chess game.
 
-    Manages UI display, user piece selection and subsequent game updates.
+    The PromotionUI class is responsible for setting up and displaying the
+    promotion selection screen when a pawn reaches the other side of the chessboard.
+    It manages UI display, handles user piece selection, and communicates with the
+    main game UI to apply the promotion.
     """
 
     def __init__(self, chess_ui: 'ChessUI', pawn: Pawn, notifier: GameEventNotifier):
         """
-        Initialize the promotion UI and start waiting for promotion selection.
+        Initialize the promotion UI and start waiting for the user's promotion selection.
 
         Args:
-            chess_ui (ChessUI): Main game UI instance.
-            pawn (Pawn): Pawn piece to be promoted.
-            notifier (GameEventNotifier): Event notifier.
+            chess_ui (ChessUI): An instance of the main game UI.
+            pawn (Pawn): The pawn piece that is about to be promoted.
+            notifier (GameEventNotifier): An instance of the event notifier to signal game events.
         """
         self.chess_ui = chess_ui
         self._selected_promotion = None
@@ -36,6 +39,9 @@ class PromotionUI:
     def create_promotion_screen(self):
         """
         Set up and display the pawn promotion selection screen.
+
+        This method initializes a new window with the promotion options.
+        The user can choose from 'Queen', 'Rook', 'Bishop', 'Knight'.
         """
         # Notify that a promotion screen will pop up
         self.notifier.notify(GameEvent.NOTIFICATION)
@@ -78,8 +84,11 @@ class PromotionUI:
             
     def wait_for_promotion(self, pawn: Pawn):
         """
-        Check for promotion selection, promote the pawn and update the game. Method notifies game of promotion event
-        after a promotion piece has been selected.
+        Check if the user has made a promotion selection.
+
+        This method continuously checks if the user has selected a promotion piece.
+        Once the selection is made, the method promotes the pawn, updates the game,
+        and notifies the game of the promotion event.
 
         Args:
             pawn (Pawn): The pawn piece to be promoted.

@@ -40,147 +40,18 @@ class Piece(ABC):
         self._type = type
         self._has_moved = False
 
-    @abstractmethod
-    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def __repr__(self):
         """
-        Abstract method to determine whether a proposed move is legal, according to the rules of the piece.
+        Returns a developer-friendly string representation of the Piece object.
 
-        The implementation should take into account the piece's movement/capture patterns,
-        as well as any potential obstructions or requirements of the game state.
-
-        Parameters:
-            px (int): The current x-coordinate of the piece.
-            py (int): The current y-coordinate of the piece.
-            x (int): The x-coordinate of the proposed move destination.
-            y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+        This method is mainly useful for debugging and logging. The string includes the piece's symbol,
+        its x and y coordinates, its team, and whether it has moved or not.
 
         Returns:
-            bool: True if the move is legal, False otherwise.
-
-        Raises:
-            NotImplementedError: If this method is not overridden in a subclass.
+            str: A string representation of the Piece object.
         """
-        raise NotImplementedError()
-
-    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
-                             game_state: 'GameState') -> bool:
-        """
-        Determines whether a proposed move to a target square on the chessboard is controlled by this piece.
-
-        This method serves as a base for all piece-specific methods to follow and is designed to be overridden in
-        subclasses. The specific rules for each piece, such as movement/capture patterns, obstructions on the path,
-        and special game state requirements, should be considered in the overriding methods.
-
-        Parameters:
-            current_x (int): The current x-coordinate of this piece on the board.
-            current_y (int): The current y-coordinate of this piece on the board.
-            target_x (int): The x-coordinate of the proposed target square on the board.
-            target_y (int): The y-coordinate of the proposed target square on the board.
-            game_state (GameState): The current state of the chess game.
-
-        Returns:
-            bool: True if the proposed target square is controlled by this piece according to its specific rules;
-                  False otherwise.
-        """
-        # This is a placeholder implementation that simply checks whether a legal move to the target square is possible.
-        # Subclasses should override this method to implement more accurate rules for each piece if necessary.
-        return self.legal_move(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
-
-    def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
-        """
-        Determine if a given piece can capture an opponent's piece at a specified square, 
-        or occupy it if the square is empty.
-
-        Parameters:
-            x (int): The x-coordinate of the square.
-            y (int): The y-coordinate of the square.
-            board (Board): The game board.
-
-        Returns:
-            bool: True if the piece can capture or occupy the square, False otherwise.
-        """
-        destination_piece = board.piece_at(x, y)
-        if destination_piece is None or destination_piece.is_white != self.is_white:
-            return True
-        return False
-
-    def _path_is_clear(self, px: int, py: int, x: int, y: int, board: 'Board', direction: str) -> bool:
-        """
-        Determines whether the path is clear in a specified direction (linear or diagonal).
-
-        Args:
-            px (int): The current x-coordinate of the piece.
-            py (int): The current y-coordinate of the piece.
-            x (int): The x-coordinate of the proposed move destination.
-            y (int): The y-coordinate of the proposed move destination.
-            board (Board): The game board.
-            direction (str): The direction of movement. Can be either 'linear' or 'diagonal'.
-
-        Returns:
-            bool: True if the path in the specified direction is clear (i.e., there are no other pieces in the way), False otherwise.
-
-        Raises:
-            ValueError: If the specified direction is not 'linear' or 'diagonal'.
-        """
-        if direction == 'linear':
-            return self.__path_is_clear_linearly(px, py, x, y, board)
-        elif direction == 'diagonal':
-            return self.__path_is_clear_diagonally(px, py, x, y, board)
-        else:
-            raise ValueError(f"Invalid direction: {direction}")
-
-    @staticmethod
-    def __path_is_clear_diagonally(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
-        """
-        Determine whether the path is clear diagonally between two given points.
-        This is intended for use by the Queen and Bishop subclasses.
-
-        Args:
-            px (int): The current x-coordinate of the piece.
-            py (int): The current y-coordinate of the piece.
-            x (int): The target x-coordinate.
-            y (int): The target y-coordinate.
-            board (Board): The current state of the game board.
-
-        Returns:
-            bool: True if the diagonal path is clear, False otherwise (i.e., if there are any pieces along the path).
-        """
-        if px != x and py != y:
-            dx = 1 if x > px else -1
-            dy = 1 if y > py else -1
-            i, j = px + dx, py + dy
-            while i != x and j != y:
-                if board.piece_at(i, j) is not None:
-                    return False
-                i += dx
-                j += dy
-        return True
-
-    @staticmethod
-    def __path_is_clear_linearly(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
-        """
-        Determine whether the path is clear in a straight line (horizontally or vertically)
-        between two given points. This is intended for use by the Queen and Rook subclasses.
-
-        Args:
-            px (int): The current x-coordinate of the piece.
-            py (int): The current y-coordinate of the piece.
-            x (int): The target x-coordinate.
-            y (int): The target y-coordinate.
-            board (Board): The current state of the game board.
-
-        Returns:
-            bool: True if the linear path is clear, False otherwise (i.e., if there are any pieces along the path).
-        """
-        if px == x or py == y:
-            for i in range(min(px, x) + 1, max(px, x)):
-                if board.piece_at(i, y) is not None:
-                    return False
-            for j in range(min(py, y) + 1, max(py, y)):
-                if board.piece_at(x, j) is not None:
-                    return False
-        return True
+        team = "White" if self.is_white else "Black"
+        return f"Piece({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
 
     @property
     def x(self) -> int:
@@ -265,15 +136,145 @@ class Piece(ABC):
         """
         self._has_moved = value
 
-    def __repr__(self):
+    @abstractmethod
+    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
         """
-        Returns a developer-friendly string representation of the Piece object.
+        Abstract method to determine whether a proposed move is legal, according to the rules of the piece.
 
-        This method is mainly useful for debugging and logging. The string includes the piece's symbol,
-        its x and y coordinates, its team, and whether it has moved or not.
+        The implementation should take into account the piece's movement/capture patterns,
+        as well as any potential obstructions or requirements of the game state.
+
+        Parameters:
+            px (int): The current x-coordinate of the piece.
+            py (int): The current y-coordinate of the piece.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            game_state (GameState): The chess game's state.
 
         Returns:
-            str: A string representation of the Piece object.
+            bool: True if the move is legal, False otherwise.
+
+        Raises:
+            NotImplementedError: If this method is not overridden in a subclass.
         """
-        team = "White" if self.is_white else "Black"
-        return f"Piece({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
+        raise NotImplementedError()
+
+    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
+                             game_state: 'GameState') -> bool:
+        """
+        Determines whether a proposed move to a target square on the chessboard is controlled by this piece.
+
+        This method serves as a base for all piece-specific methods to follow and is designed to be overridden in
+        subclasses. The specific rules for each piece, such as movement/capture patterns, obstructions on the path,
+        and special game state requirements, should be considered in the overriding methods.
+
+        Parameters:
+            current_x (int): The current x-coordinate of this piece on the board.
+            current_y (int): The current y-coordinate of this piece on the board.
+            target_x (int): The x-coordinate of the proposed target square on the board.
+            target_y (int): The y-coordinate of the proposed target square on the board.
+            game_state (GameState): The current state of the chess game.
+
+        Returns:
+            bool: True if the proposed target square is controlled by this piece according to its specific rules;
+                  False otherwise.
+        """
+        # This is a placeholder implementation that simply checks whether a legal move to the target square is possible.
+        # Subclasses should override this method to implement more accurate rules for each piece if necessary.
+        return self.legal_move(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
+
+    def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
+        """
+        Determine if a given piece can capture an opponent's piece at a specified square, 
+        or occupy it if the square is empty.
+
+        Parameters:
+            x (int): The x-coordinate of the square.
+            y (int): The y-coordinate of the square.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the piece can capture or occupy the square, False otherwise.
+        """
+        destination_piece = board.piece_at(x, y)
+        if destination_piece is None or destination_piece.is_white != self.is_white:
+            return True
+        return False
+
+    def _path_is_clear(self, px: int, py: int, x: int, y: int, board: 'Board', direction: str) -> bool:
+        """
+        Determines whether the path is clear in a specified direction (linear or diagonal).
+
+        Args:
+            px (int): The current x-coordinate of the piece.
+            py (int): The current y-coordinate of the piece.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+            direction (str): The direction of movement. Can be either 'linear' or 'diagonal'.
+
+        Returns:
+            bool: True if the path in the specified direction is clear (i.e., there are no other pieces in the way),
+                  False otherwise.
+
+        Raises:
+            ValueError: If the specified direction is not 'linear' or 'diagonal'.
+        """
+        if direction == 'linear':
+            return self.__path_is_clear_linearly(px, py, x, y, board)
+        elif direction == 'diagonal':
+            return self.__path_is_clear_diagonally(px, py, x, y, board)
+        else:
+            raise ValueError(f"Invalid direction: {direction}")
+
+    @staticmethod
+    def __path_is_clear_diagonally(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Determine whether the path is clear diagonally between two given points.
+        This is intended for use by the Queen and Bishop subclasses.
+
+        Args:
+            px (int): The current x-coordinate of the piece.
+            py (int): The current y-coordinate of the piece.
+            x (int): The target x-coordinate.
+            y (int): The target y-coordinate.
+            board (Board): The current state of the game board.
+
+        Returns:
+            bool: True if the diagonal path is clear, False otherwise (i.e., if there are any pieces along the path).
+        """
+        if px != x and py != y:
+            dx = 1 if x > px else -1
+            dy = 1 if y > py else -1
+            i, j = px + dx, py + dy
+            while i != x and j != y:
+                if board.piece_at(i, j) is not None:
+                    return False
+                i += dx
+                j += dy
+        return True
+
+    @staticmethod
+    def __path_is_clear_linearly(px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Determine whether the path is clear in a straight line (horizontally or vertically)
+        between two given points. This is intended for use by the Queen and Rook subclasses.
+
+        Args:
+            px (int): The current x-coordinate of the piece.
+            py (int): The current y-coordinate of the piece.
+            x (int): The target x-coordinate.
+            y (int): The target y-coordinate.
+            board (Board): The current state of the game board.
+
+        Returns:
+            bool: True if the linear path is clear, False otherwise (i.e., if there are any pieces along the path).
+        """
+        if px == x or py == y:
+            for i in range(min(px, x) + 1, max(px, x)):
+                if board.piece_at(i, y) is not None:
+                    return False
+            for j in range(min(py, y) + 1, max(py, y)):
+                if board.piece_at(x, j) is not None:
+                    return False
+        return True

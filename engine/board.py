@@ -20,35 +20,44 @@ class Board:
         self._pieces = []
         self._initialize_board()
 
-    def _initialize_board(self):
+    def __getitem__(self, index: int) -> Piece:
         """
-        Populates the board with chess pieces in their initial positions.
+        Returns the Piece object at the given index in the board list.
 
-        The method creates objects of various piece types (Rook, Knight, Bishop, Queen, King, and Pawn)
-        and places them on the board as per the traditional setup of a chess game.
+        Args:
+            index (int): The index of the piece in the board list.
 
-        The board is represented as a list of Piece objects, with each object storing information
-        about the type of the piece, its location on the board, the team it belongs to, and its color.
+        Returns:
+            Piece: The Piece object at the given index.
         """
-        # Add non-pawn pieces
-        for p in range(2):
-            team_type = TeamType.OPPONENT if p == 0 else TeamType.ALLY
-            is_white = False if team_type == TeamType.OPPONENT else True
-            y = 0 if team_type == TeamType.OPPONENT else 7
+        return self.pieces[index]
 
-            self.add(Rook(x=0, y=y, team=team_type, is_white=is_white))
-            self.add(Knight(x=1, y=y, team=team_type, is_white=is_white))
-            self.add(Bishop(x=2, y=y, team=team_type, is_white=is_white))
-            self.add(Queen(x=3, y=y, team=team_type, is_white=is_white))
-            self.add(King(x=4, y=y, team=team_type, is_white=is_white))
-            self.add(Bishop(x=5, y=y, team=team_type, is_white=is_white))
-            self.add(Knight(x=6, y=y, team=team_type, is_white=is_white))
-            self.add(Rook(x=7, y=y, team=team_type, is_white=is_white))
+    def __getattr__(self, name) -> list[Piece]:
+        """
+        Returns the value of the attribute named "name".
 
-        # Add pawns
-        for i in range(8):
-            self.add(Pawn(x=i, y=1, team=TeamType.OPPONENT, is_white=False))
-            self.add(Pawn(x=i, y=6, team=TeamType.ALLY, is_white=True))
+        Args:
+            name (str): The name of the attribute.
+
+        Returns:
+            list: If name is "board", returns the list of pieces on the board.
+
+        Raises:
+            AttributeError: If name is not "board".
+        """
+        if name == "board":
+            return self.pieces
+        raise AttributeError(f"'Board' object has no attribute '{name}'")
+
+    @property
+    def pieces(self) -> list[Piece]:
+        """
+        Returns the list of Piece objects representing the current state of the chess board.
+
+        Returns:
+            list: A list of Piece objects.
+        """
+        return self._pieces
 
     def piece_at(self, x: int, y: int) -> Piece or None:
         """
@@ -99,41 +108,32 @@ class Board:
         """
         self.pieces.remove(piece)
 
-    @property
-    def pieces(self) -> list[Piece]:
+    def _initialize_board(self):
         """
-        Returns the list of Piece objects representing the current state of the chess board.
+        Populates the board with chess pieces in their initial positions.
 
-        Returns:
-            list: A list of Piece objects.
+        The method creates objects of various piece types (Rook, Knight, Bishop, Queen, King, and Pawn)
+        and places them on the board as per the traditional setup of a chess game.
+
+        The board is represented as a list of Piece objects, with each object storing information
+        about the type of the piece, its location on the board, the team it belongs to, and its color.
         """
-        return self._pieces
+        # Add non-pawn pieces
+        for p in range(2):
+            team_type = TeamType.OPPONENT if p == 0 else TeamType.ALLY
+            is_white = False if team_type == TeamType.OPPONENT else True
+            y = 0 if team_type == TeamType.OPPONENT else 7
 
-    def __getitem__(self, index: int) -> Piece:
-        """
-        Returns the Piece object at the given index in the board list.
+            self.add(Rook(x=0, y=y, team=team_type, is_white=is_white))
+            self.add(Knight(x=1, y=y, team=team_type, is_white=is_white))
+            self.add(Bishop(x=2, y=y, team=team_type, is_white=is_white))
+            self.add(Queen(x=3, y=y, team=team_type, is_white=is_white))
+            self.add(King(x=4, y=y, team=team_type, is_white=is_white))
+            self.add(Bishop(x=5, y=y, team=team_type, is_white=is_white))
+            self.add(Knight(x=6, y=y, team=team_type, is_white=is_white))
+            self.add(Rook(x=7, y=y, team=team_type, is_white=is_white))
 
-        Args:
-            index (int): The index of the piece in the board list.
-
-        Returns:
-            Piece: The Piece object at the given index.
-        """
-        return self.pieces[index]
-
-    def __getattr__(self, name) -> list[Piece]:
-        """
-        Returns the value of the attribute named "name".
-
-        Args:
-            name (str): The name of the attribute.
-
-        Returns:
-            list: If name is "board", returns the list of pieces on the board.
-
-        Raises:
-            AttributeError: If name is not "board".
-        """
-        if name == "board":
-            return self.pieces
-        raise AttributeError(f"'Board' object has no attribute '{name}'")
+        # Add pawns
+        for i in range(8):
+            self.add(Pawn(x=i, y=1, team=TeamType.OPPONENT, is_white=False))
+            self.add(Pawn(x=i, y=6, team=TeamType.ALLY, is_white=True))
