@@ -87,7 +87,7 @@ class King(Piece):
 
             direction = 1 if x > px else -1  # Defines which rook to check
 
-            for i in range(1, dx):
+            for i in range(1, 4 if direction == -1 else 3):  # Check 4 squares if queen-side, 3 if king-side
                 # Checks for pieces between the King and rook
                 if game_state.board.piece_at(px + i * direction, py) is not None:
                     return False
@@ -95,7 +95,7 @@ class King(Piece):
                 # Verifies the King isn't crossing or landing on attacked squares
                 if any(other_piece.is_controlled_square(other_piece.x, other_piece.y, px + i * direction, py,
                                                         game_state)
-                       for other_piece in game_state.board.pieces if other_piece.team != self.team):
+                    for other_piece in game_state.board.pieces if other_piece.team != self.team):
                     return False
 
             rook_position = (7 if direction == 1 else 0, py)
