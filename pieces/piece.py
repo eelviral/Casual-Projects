@@ -3,7 +3,7 @@ from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine import GameState, Board
+    from engine import ChessGame, Board
 
 
 class Piece(ABC):
@@ -137,19 +137,19 @@ class Piece(ABC):
         self._has_moved = value
 
     @abstractmethod
-    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
         """
         Abstract method to determine whether a proposed move is legal, according to the rules of the piece.
 
         The implementation should take into account the piece's movement/capture patterns,
-        as well as any potential obstructions or requirements of the game state.
+        as well as any potential obstructions or requirements of the chess game.
 
         Parameters:
             px (int): The current x-coordinate of the piece.
             py (int): The current y-coordinate of the piece.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the move is legal, False otherwise.
@@ -160,20 +160,20 @@ class Piece(ABC):
         raise NotImplementedError()
 
     def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
-                             game_state: 'GameState') -> bool:
+                             chess_game: 'ChessGame') -> bool:
         """
         Determines whether a proposed move to a target square on the chessboard is controlled by this piece.
 
         This method serves as a base for all piece-specific methods to follow and is designed to be overridden in
         subclasses. The specific rules for each piece, such as movement/capture patterns, obstructions on the path,
-        and special game state requirements, should be considered in the overriding methods.
+        and special chess game requirements, should be considered in the overriding methods.
 
         Parameters:
             current_x (int): The current x-coordinate of this piece on the board.
             current_y (int): The current y-coordinate of this piece on the board.
             target_x (int): The x-coordinate of the proposed target square on the board.
             target_y (int): The y-coordinate of the proposed target square on the board.
-            game_state (GameState): The current state of the chess game.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the proposed target square is controlled by this piece according to its specific rules;
@@ -181,7 +181,7 @@ class Piece(ABC):
         """
         # This is a placeholder implementation that simply checks whether a legal move to the target square is possible.
         # Subclasses should override this method to implement more accurate rules for each piece if necessary.
-        return self.legal_move(px=current_x, py=current_y, x=target_x, y=target_y, game_state=game_state)
+        return self.legal_move(px=current_x, py=current_y, x=target_x, y=target_y, chess_game=chess_game)
 
     def can_capture_or_occupy_square(self, x: int, y: int, board: 'Board') -> bool:
         """

@@ -4,17 +4,15 @@
 # Date_Created: Monday, March 7, 2022 at 05:51 UTC
 
 
-from engine import GameState, Board, GameController
+from engine import ChessGame
 from ui import ChessUI
 
 
 class Main:
     @staticmethod
     def start_game():
-        board = Board()
-        game_state = GameState(board)
-        game_controller = GameController(game_state)
-        ui = ChessUI(game_controller)
+        chess_game = ChessGame()
+        ui = ChessUI(chess_game)
         ui.run()
 
     if __name__ == '__main__':

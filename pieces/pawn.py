@@ -3,7 +3,7 @@ from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine import GameState, GameEngine, Board
+    from engine import ChessGame, GameEngine, Board
 
 
 class Pawn(Piece):
@@ -34,7 +34,7 @@ class Pawn(Piece):
         symbol = 'P' if is_white else 'p'
         super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
 
-    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
         """
         Determine if a pawn's move is legal.
 
@@ -43,14 +43,14 @@ class Pawn(Piece):
             py (int): The current y-coordinate of the pawn.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the move is legal, False otherwise.
         """
-        if self._moving_forward(px, py, x, y, board=game_state.board) or \
-                self._capturing(px, py, x, y, board=game_state.board) or \
-                self.en_passant(px, py, x, y, game_state.game_engine):
+        if self._moving_forward(px, py, x, y, board=chess_game.board) or \
+                self._capturing(px, py, x, y, board=chess_game.board) or \
+                self.en_passant(px, py, x, y, game_engine=chess_game.engine):
             return True
         else:
             return False
@@ -104,18 +104,18 @@ class Pawn(Piece):
         return False
 
     def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
-                             game_state: 'GameState') -> bool:
+                             chess_game: 'ChessGame') -> bool:
         """
         Determine if a square is controlled by the Pawn.
 
-        A Pawn controls the squares diagonally in front of it, depending on its color (game_state).
+        A Pawn controls the squares diagonally in front of it, depending on its color.
 
         Parameters:
             current_x (int): The current x-coordinate of this piece on the board.
             current_y (int): The current y-coordinate of this piece on the board.
             target_x (int): The x-coordinate of the proposed target square on the board.
             target_y (int): The y-coordinate of the proposed target square on the board.
-            game_state (GameState): The current state of the chess game.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the Pawn controls the target square, False otherwise.
@@ -124,10 +124,10 @@ class Pawn(Piece):
         dy = target_y - current_y
         direction = -1 if self.team == TeamType.ALLY else 1
         is_capture_square = (abs(dx) == 1 and dy == direction) and \
-                self.can_capture_or_occupy_square(target_x, target_y, game_state.board)
+                self.can_capture_or_occupy_square(target_x, target_y, chess_game.board)
 
         return is_capture_square or \
-            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=game_state.game_engine)
+            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=chess_game.engine)
 
     def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
         """

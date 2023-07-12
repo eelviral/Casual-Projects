@@ -6,33 +6,33 @@ from engine.game_event import GameEvent
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine import GameState
+    from engine import ChessGame
 
 
 class GameEngine:
     """
-    A class to represent a game engine for chess. This engine handles game state,
-    moves and interactions between pieces on the board.
+    A class to represent a game engine for chess. This engine handles game moves and
+     interactions between pieces on the board.
 
     Attributes:
-        game_state (GameState): A state of the chess game.
-        board (Board): A Board object representing the current state of the chess board.
+        game (ChessGame): A ChessGame object representing the chess game.
+        board (Board): A Board object representing the current chess board.
         last_move (Move): A Move object used to represent the last move played on the board.
     """
 
-    def __init__(self, game_state: 'GameState'):
+    def __init__(self, chess_game: 'ChessGame'):
         """
-        Constructs a new game engine with the given game state.
+        Constructs a new game engine with the given chess game.
 
         Args:
-            game_state (GameState): The initial game state.
+            chess_game (ChessGame): The chess game being played.
         """
-        self.game_state = game_state
-        self.board = game_state.board
+        self.game = chess_game
+        self.board = chess_game.board
         self._last_move = Move(None, (-1, -1), (-1, -1))  # Initialize with an empty move
 
     @property
-    def last_move(self):
+    def last_move(self) -> Move:
         """
         Provides the last move that was made on the chess board. This can be useful for undo operations,
         logging, and implementing certain game rules.
@@ -65,10 +65,10 @@ class GameEngine:
         Returns:
             bool: True if the move is successful, False otherwise.
         """
-        self.game_state.event = None  # reset game event
+        self.game.event = None  # reset game event
 
         # Do not proceed with non-legal moves
-        if not piece.legal_move(px=piece.x, py=piece.y, x=new_x, y=new_y, game_state=self.game_state):
+        if not piece.legal_move(px=piece.x, py=piece.y, x=new_x, y=new_y, chess_game=self.game):
             return False
 
         # Check if there's a piece at the new position
@@ -85,11 +85,11 @@ class GameEngine:
         # Move is legal, so finalize it
         if other_piece is not None and piece.can_capture_or_occupy_square(x=original_x, y=original_y, board=self.board):
             self.board.remove(other_piece)
-            self.game_state.event = GameEvent.CAPTURE
+            self.game.event = GameEvent.CAPTURE
 
         self.last_move = Move(piece, start_position=(original_x, original_y), end_position=(new_x, new_y))
         piece.has_moved = True
-        self.game_state.game_status.positions.append(self.board.fen())
+        self.game.status.positions.append(self.board.fen())
         return True
 
     def handle_en_passant_capture(self, piece: Piece, new_x: int, new_y: int):
@@ -105,7 +105,7 @@ class GameEngine:
         if isinstance(self.last_move.piece, Pawn) and isinstance(piece, Pawn):
             if piece.en_passant(px=piece.x, py=piece.y, x=new_x, y=new_y, game_engine=self):
                 self.board.remove(self.last_move.piece)
-                self.game_state.event = GameEvent.CAPTURE
+                self.game.event = GameEvent.CAPTURE
 
     def handle_castle_move(self, piece: Piece, new_x: int, new_y: int):
         """
@@ -125,26 +125,7 @@ class GameEngine:
                 rook_new_x = 3 if new_x < piece.x else 5
                 rook.x = rook_new_x
                 rook.has_moved = True
-                self.game_state.event = GameEvent.CASTLE
-
-    def is_promotion(self):
-        """
-        Checks if a pawn is eligible for promotion. A pawn is eligible for promotion if it reaches
-        the opponent's end of the board.
-
-        Returns:
-            bool: True if a promotion is possible, False otherwise.
-        """
-        # Check if the last move was made by a pawn
-        if isinstance(self.last_move.piece, Pawn):
-            x, y = self.last_move.end_position
-            promotion_rank = 7 if self.last_move.piece.team == TeamType.OPPONENT else 0
-
-            # Check if the pawn reached the promotion rank
-            if y == promotion_rank:
-                return True
-
-        return False
+                self.game.event = GameEvent.CASTLE
 
     def promote(self, piece: Pawn, promotion_piece: type[Piece]):
         """

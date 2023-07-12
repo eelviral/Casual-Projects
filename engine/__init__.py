@@ -1,5 +1,4 @@
-from engine.game_controller import GameController
-from engine.game_state import GameState
+from engine.chess_game import ChessGame
 from engine.board import Board
 from engine.game_engine import GameEngine
 from engine.game_status import GameStatus
@@ -8,5 +7,5 @@ from engine.game_event import GameEvent
 from engine.game_event_notifier import GameEventNotifier
 from engine.move import Move
 
-__all__ = ['GameController', 'GameState', 'Board', 'GameEngine', 'GameStatus', 'MoveGenerator', 'GameEvent',
+__all__ = ['ChessGame', 'Board', 'GameEngine', 'GameStatus', 'MoveGenerator', 'GameEvent',
            'GameEventNotifier', 'Move']

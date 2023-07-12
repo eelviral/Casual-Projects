@@ -4,7 +4,7 @@ from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine.game_state import GameState
+    from engine import ChessGame
 
 
 class King(Piece):
@@ -37,7 +37,7 @@ class King(Piece):
         super().__init__(x, y, team, is_white, symbol, PieceType.KING)
         self.has_moved = False
 
-    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
         """
         Determine if a King's move is legal.
 
@@ -46,7 +46,7 @@ class King(Piece):
             py (int): The current y-coordinate of the King.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the move is legal, False otherwise.
@@ -54,10 +54,10 @@ class King(Piece):
         dx = abs(x - px)
         dy = abs(y - py)
 
-        return self.can_castle(px, py, x, y, game_state) or \
-            ((dx <= 1 and dy <= 1) and self.can_capture_or_occupy_square(x, y, board=game_state.board))
+        return self.can_castle(px, py, x, y, chess_game) or \
+            ((dx <= 1 and dy <= 1) and self.can_capture_or_occupy_square(x, y, board=chess_game.board))
 
-    def can_castle(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def can_castle(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
         """
         Checks if the King can perform a castling move in chess.
 
@@ -73,7 +73,7 @@ class King(Piece):
             py (int): Current y-coordinate of the King.
             x (int): X-coordinate of the intended move.
             y (int): Y-coordinate of the intended move.
-            game_state (GameState): Current state of the game.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the King can castle, False otherwise.
@@ -89,17 +89,17 @@ class King(Piece):
 
             for i in range(1, 4 if direction == -1 else 3):  # Check 4 squares if queen-side, 3 if king-side
                 # Checks for pieces between the King and rook
-                if game_state.board.piece_at(px + i * direction, py) is not None:
+                if chess_game.board.piece_at(px + i * direction, py) is not None:
                     return False
 
                 # Verifies the King isn't crossing or landing on attacked squares
                 if any(other_piece.is_controlled_square(other_piece.x, other_piece.y, px + i * direction, py,
-                                                        game_state)
-                    for other_piece in game_state.board.pieces if other_piece.team != self.team):
+                                                        chess_game)
+                    for other_piece in chess_game.board.pieces if other_piece.team != self.team):
                     return False
 
             rook_position = (7 if direction == 1 else 0, py)
-            rook_piece = game_state.board.piece_at(rook_position[0], rook_position[1])
+            rook_piece = chess_game.board.piece_at(rook_position[0], rook_position[1])
 
             # Confirms there's an unmoved rook at the position
             if isinstance(rook_piece, Rook) and not rook_piece.has_moved:

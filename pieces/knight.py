@@ -3,7 +3,7 @@ from utils.type import PieceType, TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine.game_state import GameState
+    from engine import ChessGame
 
 
 class Knight(Piece):
@@ -34,7 +34,7 @@ class Knight(Piece):
         symbol = 'N' if is_white else 'n'
         super().__init__(x, y, team, is_white, symbol, PieceType.KNIGHT)
 
-    def legal_move(self, px: int, py: int, x: int, y: int, game_state: 'GameState') -> bool:
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
         """
         Determine if a Knight's move is legal.
 
@@ -43,7 +43,7 @@ class Knight(Piece):
             py (int): The current y-coordinate of the Knight.
             x (int): The x-coordinate of the proposed move destination.
             y (int): The y-coordinate of the proposed move destination.
-            game_state (GameState): The chess game's state.
+            chess_game (ChessGame): The chess game being played.
 
         Returns:
             bool: True if the move is legal, False otherwise.
@@ -51,4 +51,4 @@ class Knight(Piece):
         dx = abs(x - px)
         dy = abs(y - py)
         return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and \
-            self.can_capture_or_occupy_square(x, y, board=game_state.board)
+            self.can_capture_or_occupy_square(x, y, board=chess_game.board)

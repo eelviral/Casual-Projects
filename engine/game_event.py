@@ -5,6 +5,7 @@ class GameEvent(Enum):
     """
     Enumerates different events that can occur in a chess game.
 
+    ONGOING: Represents an ongoing game.
     MOVE: Represents a standard piece move.
     CAPTURE: Represents a piece capture.
     CASTLE: Represents castling.
@@ -13,6 +14,7 @@ class GameEvent(Enum):
     CHECK: Represents a check.
     STALEMATE: Represents a stalemate.
     CHECKMATE: Represents a checkmate.
+    DRAW: Represents a player-decided draw.
     """
     ONGOING = 'ongoing'
     MOVE = 'move'
