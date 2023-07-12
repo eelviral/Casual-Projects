@@ -13,7 +13,7 @@ class SoundPlayer:
         """
         mixer.init()
 
-    def handle_event(self, event):
+    def handle_event(self, event: GameEvent):
         """
         Handle a game event by playing the corresponding sound effect.
 
