@@ -1,10 +1,12 @@
 import tkinter as tk
 from engine import GameState
+from engine.game_controller import GameController
 from pieces import Piece
 from ui.click_handler import ClickHandler
 
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
+SCREEN_WIDTH = 900
 
 
 class ChessUI:
@@ -12,7 +14,7 @@ class ChessUI:
     A class to represent the user interface for a chess game.
 
     Attributes:
-        game_state (GameState): The current state of the game.
+        game_controller (GameController): The game controller to use.
         root (Tk): The root Tkinter instance.
         canvas (Canvas): The Tkinter canvas to draw the game on.
         images (dict): Dictionary mapping piece symbols to their images.
@@ -21,23 +23,26 @@ class ChessUI:
         legal_moves (list): List of current legal moves.
     """
 
-    def __init__(self, game_state: GameState):
+    def __init__(self, game_controller: GameController):
         """
         Initialize the ChessUI with a given game state.
 
         Args:
-            game_state (GameState): The current state of the game.
+            game_controller (GameController): The game controller to use.
         """
-        self.game_state = game_state
+        self.game_controller = game_controller
 
         # Initialize screen
         self.root = tk.Tk()
-        self.canvas = tk.Canvas(self.root, width=900, height=900)
+        self.canvas = tk.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_WIDTH)
         self.canvas.pack()
 
         # Set the window icon and title
         self.root.iconbitmap('images/ico/chess-icon.ico')
         self.root.title("Chess")
+
+        # Center the canvas
+        self.center_canvas()
 
         # Load images
         self.images = self.__load_images()
@@ -56,7 +61,7 @@ class ChessUI:
         Args:
             piece (Piece): The piece to calculate legal moves for.
         """
-        self.legal_moves = self.game_state.move_generator.calculate_legal_moves_for_piece(piece)
+        self.legal_moves = self.game_controller.game_state.move_generator.calculate_legal_moves_for_piece(piece)
         self.update()  # Update immediately after calculating legal moves
 
     @staticmethod
@@ -97,7 +102,7 @@ class ChessUI:
 
     def draw_pieces(self):
         """Draw the chess pieces on the board using the images loaded previously."""
-        for piece in self.game_state.board:
+        for piece in self.game_controller.game_state.board:
             if piece is not None:
                 x = (piece.x + 0.5) * 100 + 50
                 y = (piece.y + 0.5) * 100 + 50
@@ -119,6 +124,16 @@ class ChessUI:
             self.canvas.create_text(x, y, text=8 - i)
             x = 875
             self.canvas.create_text(x, y, text=8 - i)
+
+    def center_canvas(self):
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Positioning the window in the center of the screen
+        x_coordinate = (screen_width / 2) - (SCREEN_WIDTH / 2)
+        y_coordinate = (screen_height / 2) - (SCREEN_WIDTH / 1.95)
+
+        self.root.geometry("%dx%d+%d+%d" % (SCREEN_WIDTH, SCREEN_WIDTH, x_coordinate, y_coordinate))
 
     def update(self):
         """

@@ -120,7 +120,13 @@ class Pawn(Piece):
         Returns:
             bool: True if the Pawn controls the target square, False otherwise.
         """
-        return self._capturing(px=current_x, py=current_y, x=target_x, y=target_y, board=game_state.board) or \
+        dx = target_x - current_x
+        dy = target_y - current_y
+        direction = -1 if self.team == TeamType.ALLY else 1
+        is_capture_square = (abs(dx) == 1 and dy == direction) and \
+                self.can_capture_or_occupy_square(target_x, target_y, game_state.board)
+
+        return is_capture_square or \
             self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=game_state.game_engine)
 
     def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:

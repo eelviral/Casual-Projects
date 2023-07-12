@@ -18,20 +18,21 @@ class PromotionUI:
     promotion selection screen when a pawn reaches the other side of the chessboard.
     It manages UI display, handles user piece selection, and communicates with the
     main game UI to apply the promotion.
+
+    Attributes
     """
 
-    def __init__(self, chess_ui: 'ChessUI', pawn: Pawn, notifier: GameEventNotifier):
+    def __init__(self, chess_ui: 'ChessUI', pawn: Pawn):
         """
         Initialize the promotion UI and start waiting for the user's promotion selection.
 
         Args:
             chess_ui (ChessUI): An instance of the main game UI.
             pawn (Pawn): The pawn piece that is about to be promoted.
-            notifier (GameEventNotifier): An instance of the event notifier to signal game events.
         """
         self.chess_ui = chess_ui
         self._selected_promotion = None
-        self.notifier = notifier
+        self.notifier = chess_ui.game_controller.game_state.game_event_notifier
 
         self.create_promotion_screen()
         self.chess_ui.root.after(100, lambda: self.wait_for_promotion(pawn))
@@ -99,7 +100,7 @@ class PromotionUI:
             promotion_piece = self.selected_promotion
             self.selected_promotion = None  # reset selected promotion
 
-            self.chess_ui.game_state.game_engine.promote(pawn, promotion_piece)  # promote the pawn
+            self.chess_ui.game_controller.game_state.game_engine.promote(pawn, promotion_piece)  # promote the pawn
             self.notifier.notify(GameEvent.PROMOTION)  # promotion event notification
             self.chess_ui.update()  # update immediately after promotion
 

@@ -1,11 +1,11 @@
 import copy
 
+from engine.game_event_notifier import GameEventNotifier
 from engine.game_event import GameEvent
 from engine.board import Board
 from engine.game_engine import GameEngine
 from engine.game_status import GameStatus
 from engine.move_generator import MoveGenerator
-from pieces import Piece
 from utils import TeamType
 
 
@@ -34,6 +34,7 @@ class GameState:
         self._move_generator = MoveGenerator(self)
         self._game_engine = GameEngine(self)
         self._game_status = GameStatus(self)
+        self._game_event_notifier = GameEventNotifier()
 
     @property
     def board(self) -> Board:
@@ -65,22 +66,31 @@ class GameState:
         """
         self._event = e
 
-    def get_state(self, piece_moved: Piece) -> GameEvent:
+    @property
+    def game_event_notifier(self) -> GameEventNotifier:
+        """
+        Returns the game event notifier of the game.
+
+        Returns:
+            GameEventNotifier: The game event notifier.
+        """
+        return self._game_event_notifier
+
+    def get_state(self, team: TeamType) -> GameEvent:
         """
         Determines the game event based on the current board state and the last move.
 
         Args:
-            piece_moved (Piece): The piece that moved last.
+            team (TeamType): The team currently playing on the chessboard.
 
         Returns:
             GameEvent: The calculated game event.
         """
-        enemy_team = TeamType.OPPONENT if piece_moved.team == TeamType.ALLY else TeamType.ALLY
-        if self.game_status.is_in_checkmate(enemy_team):
+        if self.game_status.is_in_checkmate(team):
             return GameEvent.CHECKMATE
-        elif self.game_status.is_in_check(enemy_team):
+        elif self.game_status.is_in_check(team):
             return GameEvent.CHECK
-        elif self.game_status.is_in_stalemate(enemy_team):
+        elif self.game_status.is_in_stalemate(team):
             return GameEvent.STALEMATE
         elif self.event == GameEvent.CAPTURE:
             return self.event

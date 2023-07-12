@@ -1,3 +1,6 @@
+from engine.game_event import GameEvent
+
+
 class GameEventNotifier:
     """
     Manages event notifications for the chess game.
@@ -20,12 +23,12 @@ class GameEventNotifier:
         """
         self._observers.append(observer)
 
-    def notify(self, event):
+    def notify(self, event: GameEvent):
         """
         Notify all subscribed observers of a specific game event.
 
         Args:
-            event: The event that has occurred.
+            event (GameEvent): The event that has occurred.
         """
         for observer in self._observers:
             observer.handle_event(event)

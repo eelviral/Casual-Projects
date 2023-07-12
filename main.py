@@ -4,20 +4,17 @@
 # Date_Created: Monday, March 7, 2022 at 05:51 UTC
 
 
-from engine import GameState, Board
-# from player import Human, Computer
-# from AI import find_best_move
+from engine import GameState, Board, GameController
 from ui import ChessUI
 
 
 class Main:
     @staticmethod
     def start_game():
-        # white = Human(white_side=True)
-        # black = Computer(white_side=False)
         board = Board()
         game_state = GameState(board)
-        ui = ChessUI(game_state)
+        game_controller = GameController(game_state)
+        ui = ChessUI(game_controller)
         ui.run()
 
     if __name__ == '__main__':

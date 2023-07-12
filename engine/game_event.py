@@ -14,6 +14,7 @@ class GameEvent(Enum):
     STALEMATE: Represents a stalemate.
     CHECKMATE: Represents a checkmate.
     """
+    ONGOING = 'ongoing'
     MOVE = 'move'
     CAPTURE = 'capture'
     CASTLE = 'castle'
@@ -22,4 +23,5 @@ class GameEvent(Enum):
     CHECK = 'check'
     STALEMATE = 'stalemate'
     CHECKMATE = 'checkmate'
+    DRAW = 'draw'
 
