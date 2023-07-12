@@ -27,8 +27,8 @@ class ClickHandler:
         self.chess_ui = chess_ui
         self.board = chess_ui.game.board
 
-        # An instance of GameEventNotifier to notify subscribers of game events
-        self.notifier = GameEventNotifier()
+        # An instance of GameEventNotifier (used to play game sounds upon game events)
+        self.notifier = chess_ui.game.game_event_notifier
 
         # Create and subscribe a sound player to the notifier
         sound_player = SoundPlayer()
