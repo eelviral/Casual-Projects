@@ -19,8 +19,7 @@ class ChessGame:
     move generator, engine, and status.
 
     Attributes:
-        player1 (Player): The first player.
-        player2 (Player): The second player.
+        players (list[Player]): The list of active players.
         _board (Board): The current game board.
         _event (GameEvent): The current game event.
         _move_generator (MoveGenerator): Generator for possible moves.
