@@ -108,13 +108,13 @@ class GameStatus:
         positions_counter = Counter(self.positions)
         return positions_counter[self.board.fen()] >= 3
 
-    def is_promotion(self) -> bool:
+    def was_pawn_recently_promoted(self) -> bool:
         """
-        Checks if a pawn is eligible for promotion. A pawn is eligible for promotion if it reaches
-        the opponent's end of the board.
+        Checks if a pawn was recently promoted. This happens when a pawn reaches
+        the opponent's end of the board (the 8th rank for white pawns or the 1st rank for black pawns).
 
         Returns:
-            bool: True if a promotion is possible, False otherwise.
+            bool: True if a pawn was recently promoted, False otherwise.
         """
         # Check if the last move was made by a pawn
         if isinstance(self.game.engine.last_move.piece, Pawn):

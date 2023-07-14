@@ -1,10 +1,10 @@
 import tkinter as tk
-from engine import GameEvent
 from pieces import Piece, Pawn
 from utils.constants import piece_classes
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from engine import GameEvent
     from ui import ChessUI
 
 

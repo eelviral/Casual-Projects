@@ -53,7 +53,7 @@ class GameEngine:
         """
         self._last_move = replace(move)
 
-    def move_piece(self, piece: Piece, new_x: int, new_y: int) -> bool:
+    def move_piece(self, piece: Piece, new_x: int, new_y: int, promotion_piece: type[Piece] = None) -> bool:
         """
         Moves a piece to a new position on the board. If the new position is occupied by another piece,
         that piece is removed from the board. If the new position is occupied by an ally, the move is not made.
@@ -62,6 +62,8 @@ class GameEngine:
             piece (Piece): The piece to move.
             new_x (int): The new x-coordinate for the piece.
             new_y (int): The new y-coordinate for the piece.
+            promotion_piece (type[Piece]): The type of piece that the pawn should be promoted to.
+
         Returns:
             bool: True if the move is successful, False otherwise.
         """
@@ -70,7 +72,6 @@ class GameEngine:
         # Do not proceed with non-legal moves
         if not piece.legal_move(px=piece.x, py=piece.y, x=new_x, y=new_y, chess_game=self.game):
             return False
-
         # Check if there's a piece at the new position
         other_piece = self.board.piece_at(x=new_x, y=new_y)
 
@@ -82,12 +83,20 @@ class GameEngine:
         original_x, original_y = piece.x, piece.y
         piece.x, piece.y = new_x, new_y
 
+        # Check for promotion
+        if isinstance(piece, Pawn) and (
+                (piece.team == TeamType.ALLY and new_y == 7) or (piece.team == TeamType.OPPONENT and new_y == 0)):
+            if promotion_piece is not None:
+                self.promote(piece, promotion_piece)
+                self.game.event = GameEvent.PROMOTION
+            else:
+                return False
+
         # Move is legal, so finalize it
         if other_piece is not None and piece.can_capture_or_occupy_square(x=original_x, y=original_y, board=self.board):
             self.board.remove(other_piece)
             self.game.event = GameEvent.CAPTURE
 
-        self.last_move = Move(piece, start_position=(original_x, original_y), end_position=(new_x, new_y))
         piece.has_moved = True
         self.game.status.positions.append(self.board.fen())
         return True
@@ -122,10 +131,14 @@ class GameEngine:
             rook = self.board.piece_at(x=rook_x, y=new_y)
             if rook is not None and isinstance(rook, Rook):
                 # Determine the new position for the rook and move it there
-                rook_new_x = 3 if new_x < piece.x else 5
+                if new_x < piece.x:
+                    rook_new_x = 3
+                    self.game.event = GameEvent.QUEEN_SIDE_CASTLE
+                else:
+                    rook_new_x = 5
+                    self.game.event = GameEvent.KING_SIDE_CASTLE
                 rook.x = rook_new_x
                 rook.has_moved = True
-                self.game.event = GameEvent.CASTLE
 
     def promote(self, piece: Pawn, promotion_piece: type[Piece]):
         """

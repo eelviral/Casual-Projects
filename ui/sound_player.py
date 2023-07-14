@@ -1,5 +1,5 @@
 from pygame import mixer
-from engine import GameEvent
+from engine.game_event import GameEvent
 
 
 class SoundPlayer:
@@ -13,7 +13,7 @@ class SoundPlayer:
         """
         mixer.init()
 
-    def handle_event(self, event: GameEvent):
+    def handle_event(self, event):
         """
         Handle a game event by playing the corresponding sound effect.
 
@@ -22,7 +22,7 @@ class SoundPlayer:
         """
         self.play_sound_effect(event)
 
-    def play_sound_effect(self, event: GameEvent):
+    def play_sound_effect(self, event: 'GameEvent'):
         """
         Play a sound effect corresponding to a game event.
 
@@ -33,7 +33,7 @@ class SoundPlayer:
         self.play_sound(sound_path)
 
     @staticmethod
-    def get_sound_path(event: GameEvent) -> str:
+    def get_sound_path(event: 'GameEvent') -> str:
         """
         Returns the sound file path corresponding to the game event.
 
@@ -46,7 +46,9 @@ class SoundPlayer:
         match event:
             case GameEvent.CAPTURE:
                 return "sounds/capture.mp3"
-            case GameEvent.CASTLE:
+            case GameEvent.KING_SIDE_CASTLE:
+                return "sounds/castle.mp3"
+            case GameEvent.QUEEN_SIDE_CASTLE:
                 return "sounds/castle.mp3"
             case GameEvent.PROMOTION:
                 return "sounds/promote.mp3"

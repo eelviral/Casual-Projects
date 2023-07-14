@@ -5,15 +5,12 @@
 
 
 from engine import ChessGame
-from ui import ChessUI
 
 
 class Main:
     @staticmethod
     def start_game():
-        chess_game = ChessGame()
-        ui = ChessUI(chess_game)
-        ui.run()
+        ChessGame()        
 
     if __name__ == '__main__':
         start_game()

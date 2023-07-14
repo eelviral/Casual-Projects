@@ -1,7 +1,6 @@
 import tkinter as tk
 from ui.promotion_ui import PromotionUI
 from ui.sound_player import SoundPlayer
-from utils import TeamType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -66,17 +65,25 @@ class ClickHandler:
             chess_ui.first_click = None
 
             if (new_x, new_y) in chess_ui.legal_moves:
+                player_moved = chess_ui.game.current_player
                 chess_ui.game.make_move(piece, new_x, new_y)
-                enemy_team = TeamType.OPPONENT if piece.team == TeamType.ALLY else TeamType.ALLY
-                event = self.chess_ui.game.get_state(enemy_team)
+                main_event = self.chess_ui.game.get_state(piece.team)[0]
 
-                # Notifies subscribers of the game event
-                self.notifier.notify(event)
+                # Notifies subscribers of the most important game event
+                self.notifier.notify(main_event)
 
-                if chess_ui.game.status.is_promotion():
-                    # Handles promotion selection and promotion sound effect
+                # Handle promotion selection with UI display if the current player is human
+                if chess_ui.game.status.was_pawn_recently_promoted() and player_moved.is_human:
                     PromotionUI(chess_ui=chess_ui, pawn=piece)
 
-            chess_ui.selected_piece = None
-            chess_ui.legal_moves = []
-            chess_ui.update()
+                chess_ui.selected_piece = None
+                chess_ui.legal_moves = []
+                chess_ui.update()
+                
+                # After human player makes a move, call next_turn to update the current player and handle subsequent actions.
+                chess_ui.game.next_turn()
+            else:
+                # Deselect the piece if the clicked square is not a legal move
+                chess_ui.selected_piece = None
+                chess_ui.legal_moves = []
+                chess_ui.update()

@@ -1,9 +1,13 @@
 from __future__ import annotations
 import copy
 from typing import Optional
-from pieces import Piece
+
+from engine.move import Move
+from pieces import Piece, Queen
+from pieces.king import King
+from pieces.pawn import Pawn
 from players import Player
-from utils.type import TeamType
+from utils.type import TeamType, PieceType
 
 from engine.game_event_notifier import GameEventNotifier
 from engine.game_event import GameEvent
@@ -11,6 +15,8 @@ from engine.board import Board
 from engine.game_engine import GameEngine
 from engine.game_status import GameStatus
 from engine.move_generator import MoveGenerator
+
+from ui import ChessUI
 
 
 class ChessGame:
@@ -31,7 +37,8 @@ class ChessGame:
         """
         Initializes a Game with two players, a board, and a game engine.
         """
-        self.players = [Player(name="player 1", team=TeamType.ALLY), Player(name="player 2", team=TeamType.OPPONENT)]
+        self.players = [Player(name="player 1", team=TeamType.ALLY),
+                        Player(name="player 2", team=TeamType.OPPONENT, is_human=False)]
         self.current_player = self.players[0]
         self.state = GameEvent.ONGOING
         self._board = Board()
@@ -40,6 +47,9 @@ class ChessGame:
         self._engine = GameEngine(self)
         self._status = GameStatus(self)
         self._game_event_notifier = GameEventNotifier()
+        
+        self.ui = ChessUI(self)
+        self.ui.run()
 
     @property
     def board(self) -> Board:
@@ -111,13 +121,7 @@ class ChessGame:
         """
         return self._status
 
-    def next_turn(self):
-        """
-        Ends the current player's turn and passes the turn to the other player.
-        """
-        self.current_player = self.players[1] if self.current_player == self.players[0] else self.players[0]
-
-    def make_move(self, piece: Piece, new_x: int, new_y: int) -> bool:
+    def make_move(self, piece: Piece, new_x: int, new_y: int, promotion_piece: type[Piece] = None) -> bool:
         """
         Makes a move in the game. If the move is legal and successful, the turn is passed to the other player.
 
@@ -131,21 +135,69 @@ class ChessGame:
         """
         if self.state != GameEvent.ONGOING or piece.team != self.current_player.team:
             return False
+        original_x, original_y = piece.x, piece.y
 
-        move_successful = self.engine.move_piece(piece, new_x, new_y)
+        if self.move_leads_to_promotion(piece, new_y):
+            # If a promotion piece is not specified or is not a valid promotion piece, default to a queen
+            if promotion_piece is None or isinstance(promotion_piece, (King, Pawn)):
+                promotion_piece = Queen(x=piece.x, y=piece.y, team=piece.team, is_white=piece.is_white)
+            move_successful = self.engine.move_piece(piece, new_x, new_y, promotion_piece=promotion_piece)
+        else:
+            promotion_piece = None
+            move_successful = self.engine.move_piece(piece, new_x, new_y, promotion_piece)
+        
         if move_successful:
-            self.next_turn()
+            events = self.get_state(self.current_player.team)
+
+            # Record successful move in game engine
+            self.engine.last_move = Move(
+                piece=piece,
+                start_position=(original_x, original_y),
+                end_position=(new_x, new_y),
+                is_capture=GameEvent.CAPTURE in events,
+                is_king_side_castle=GameEvent.KING_SIDE_CASTLE in events,
+                is_queen_side_castle=GameEvent.QUEEN_SIDE_CASTLE in events,
+                is_check=GameEvent.CHECK in events,
+                is_stalemate=GameEvent.STALEMATE in events,
+                is_checkmate=GameEvent.CHECKMATE in events,
+                promotion=promotion_piece
+            )
+            print(repr(self.engine.last_move))
+
+            self.ui.update()  # Refresh the UI board after each move
             self.check_game_over()
 
         return move_successful
+
+    def next_turn(self):
+        """
+        Ends the current player's turn and passes the turn to the other player.
+        """
+        self.current_player = self.players[1] if self.current_player == self.players[0] else self.players[0]
+        if not self.current_player.is_human:
+            move = self.current_player.ai_choose_move(self)
+            
+            if move != (None, -1, -1, None):
+                cpu_piece, cpu_x, cpu_y, cpu_promotion_piece = move
+                self.make_move(piece=cpu_piece, 
+                            new_x=cpu_x, 
+                            new_y=cpu_y, 
+                            promotion_piece=cpu_promotion_piece)
+                self.next_turn()  # switch turn back to the human player after AI makes a move
+            else:
+                # End the game
+                self.check_game_over()
+                print(f"{self.get_winner().name} wins!")
+
+
 
     def check_game_over(self):
         """
         Checks if the game is over (i.e., if the current player is in checkmate or stalemate).
         """
-        state = self.get_state(self.current_player.team)
-        if state == GameEvent.CHECKMATE or state == GameEvent.STALEMATE:
-            self.state = state
+        main_state = self.get_state(self.current_player.team)[0]
+        if main_state == GameEvent.CHECKMATE or main_state == GameEvent.STALEMATE:
+            self.state = main_state
 
     def get_winner(self) -> Optional[Player]:
         """
@@ -165,7 +217,16 @@ class ChessGame:
         Returns:
             ChessGame: A copy of the current game.
         """
-        return copy.deepcopy(self)
+        # Temporarily store the UI object
+        ui_temp = self.ui
+        self.ui = None
+        
+        # Copy the game
+        copied_game = copy.deepcopy(self)
+        
+        # The copied game does not have a UI object
+        self.ui = ui_temp
+        return copied_game
 
     def current_team_legal_moves(self) -> list[tuple[Piece, tuple[int, int]]]:
         """
@@ -179,7 +240,7 @@ class ChessGame:
         return [(piece, move) for piece in self.board.pieces if piece.team == self.current_player.team
                 for move in self.move_generator.piece_legal_moves(piece)]
 
-    def get_state(self, team: TeamType) -> GameEvent:
+    def get_state(self, team: TeamType) -> list[GameEvent]:
         """
         Determines the game event based on the current board state and the last move.
 
@@ -189,16 +250,43 @@ class ChessGame:
         Returns:
             GameEvent: The calculated game event.
         """
-        if self.status.is_in_checkmate(team):
-            return GameEvent.CHECKMATE
-        elif self.status.is_in_check(team):
-            return GameEvent.CHECK
-        elif self.status.is_in_stalemate(team):
-            return GameEvent.STALEMATE
-        elif self.event == GameEvent.CAPTURE:
-            return self.event
-        elif self.event == GameEvent.CASTLE:
-            return self.event
-        elif self.status.is_promotion():
-            return self.event
-        return GameEvent.MOVE
+        enemy_team = TeamType.OPPONENT if team == TeamType.ALLY else TeamType.ALLY
+        events = []
+        if self.status.is_in_checkmate(enemy_team):  # Check if this team checkmated the opponent
+            events.append(GameEvent.CHECKMATE)
+        elif self.status.is_in_check(enemy_team):  # Check if this team checked the opponent
+            events.append(GameEvent.CHECK)
+        elif self.status.is_in_stalemate(enemy_team):  # Check if this team stalemated the opponent
+            events.append(GameEvent.STALEMATE)
+
+        if self.event == GameEvent.CAPTURE:  # Check if this team captured a piece
+            events.append(self.event)
+        if self.event == GameEvent.KING_SIDE_CASTLE or \
+                self.event == GameEvent.QUEEN_SIDE_CASTLE:  # Check if this team castled
+            events.append(self.event)
+        if self.status.was_pawn_recently_promoted():  # Check if this team promoted
+            events.append(self.event)
+        events.append(GameEvent.MOVE)  # If none of the above checks passed, assume a normal move occurred
+        return events
+
+    @staticmethod
+    def move_leads_to_promotion(piece: Piece, new_y: int) -> bool:
+        """
+        Checks if the given move, when made, will lead to the promotion of a pawn.
+        A pawn can be promoted when it is about to move to the opponent's end of the board
+        (the 8th rank for white pawns or the 1st rank for black pawns).
+
+        Args:
+            piece (Piece): The piece to move.
+            new_y (int): The new y-coordinate for the piece.
+
+        Returns:
+            bool: True if the move leads to a promotion, False otherwise.
+        """
+        if piece.type == PieceType.PAWN:
+            if piece.team == TeamType.ALLY and new_y == 0:  # For white pawns
+                return True
+            elif piece.team == TeamType.OPPONENT and new_y == 7:  # For black pawns
+                return True
+
+        return False

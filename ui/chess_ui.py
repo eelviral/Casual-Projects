@@ -1,7 +1,10 @@
 import tkinter as tk
-from engine.chess_game import ChessGame
 from pieces import Piece
 from ui.click_handler import ClickHandler
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine import ChessGame
 
 WHITE_IMAGES = 'images/white/'
 BLACK_IMAGES = 'images/black/'
@@ -24,7 +27,7 @@ class ChessUI:
         click_handler (ClickHandler): Instance of the click handler to manage click events.
     """
 
-    def __init__(self, chess_game: ChessGame):
+    def __init__(self, chess_game: 'ChessGame'):
         """
         Initializes the ChessUI with a given chess game, sets up the game window,
         and binds mouse click events to the click handler.
