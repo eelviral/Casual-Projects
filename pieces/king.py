@@ -82,7 +82,8 @@ class King(Piece):
         dy = abs(y - py)
 
         if dy == 0 and dx == 2:
-            if self.has_moved:
+            # Can't castle if the King has moved or is in check
+            if self.has_moved or chess_game.status.is_in_check(self.team):
                 return False
 
             direction = 1 if x > px else -1  # Defines which rook to check
