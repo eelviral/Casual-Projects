@@ -1,132 +1,109 @@
-from piece import Piece
-from itertools import product
+from pieces import Piece
+from pieces.rook import Rook
+from utils.type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine import ChessGame
 
 
 class King(Piece):
-    def __init__(self, white):
-        super().__init__(white)
-        self._in_check = False
-        self._is_castling = False
+    """
+    Represents a King piece in a chess game. Inherits from the Piece class.
 
-    def can_move(self, board, start, end) -> bool:
+    The King class is a subclass of the Piece class, with a specific type of PieceType.KING.
+
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'K', 'k').
+        type (PieceType): The type of the piece (KING).
+        has_moved (bool): Determines whether the King has already moved (at least once) or not.
+    """
+
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if king can currently move to marked position
+        Initializes a King with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
+        symbol = 'K' if is_white else 'k'
+        super().__init__(x, y, team, is_white, symbol, PieceType.KING)
+        self.has_moved = False
 
-        x = abs(end.x - start.x)
-        y = abs(end.y - start.y)
-        self.is_castling = False
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
+        """
+        Determine if a King's move is legal.
 
-        # Don't move if same square
-        if x == 0 and y == 0:
-            return False
+        Args:
+            px (int): The current x-coordinate of the King.
+            py (int): The current y-coordinate of the King.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            chess_game (ChessGame): The chess game being played.
 
-        # Can't move if it will put king in check
-        if self.risk_check(board, end.x, end.y):
-            return False
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        dx = abs(x - px)
+        dy = abs(y - py)
 
-        if (x + y) == 1 or (x == 1 and y == 1):
-            # If end position is empty, move
-            if end.piece is None:
-                return True
+        return self.can_castle(px, py, x, y, chess_game) or \
+            ((dx <= 1 and dy <= 1) and self.can_capture_or_occupy_square(x, y, board=chess_game.board))
 
-            # Cannot move if there's a piece at the end position of the same color
-            if end.piece.is_white == self.is_white:
+    def can_castle(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
+        """
+        Checks if the King can perform a castling move in chess.
+
+        Castling is a special move involving the King and one of the rooks of the same color,
+        where both are moved in a single turn. It can only occur if neither piece has moved before,
+        no pieces are between them, the King isn't in check, and the squares the King crosses
+        or lands on aren't under attack.
+
+        Note: This method assumes that the king is not in check
+
+        Parameters:
+            px (int): Current x-coordinate of the King.
+            py (int): Current y-coordinate of the King.
+            x (int): X-coordinate of the intended move.
+            y (int): Y-coordinate of the intended move.
+            chess_game (ChessGame): The chess game being played.
+
+        Returns:
+            bool: True if the King can castle, False otherwise.
+        """
+        dx = abs(x - px)
+        dy = abs(y - py)
+
+        if dy == 0 and dx == 2:
+            # Can't castle if the King has moved or is in check
+            if self.has_moved or chess_game.status.is_in_check(self.team):
                 return False
-            else:
-                return True
 
-        return self.is_valid_castle(board, start, end)
+            direction = 1 if x > px else -1  # Defines which rook to check
 
-    def controlled_squares(self, board, x, y) -> list:
-        squares = []
-        for vector in product((0, -1, 1), (0, -1, 1)):
-            next_x = x + vector[0]
-            next_y = y + vector[1]
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-            squares.append((next_x, next_y))
-        return squares
-
-    def legal_moves(self, board, x, y) -> list:
-        moves = []
-        current_spot = board.get_box(x, y)
-        for vector in product((0, -1, 1), (0, -1, 1)):
-            next_x = x + vector[0]
-            next_y = y + vector[1]
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-
-            next_spot = board.get_box(next_x, next_y)
-            if next_spot.piece is None:
-                if not self.risk_check(board, next_x, next_y):
-                    moves.append((next_x, next_y))
-            else:
-                if (next_spot.piece.is_white != current_spot.piece.is_white and
-                        not self.risk_check(board, next_x, next_y)):
-                    moves.append((next_x, next_y))
-                continue
-
-        for vector in [-2, 2]:
-            next_y = y + vector
-            if next_y < 0 or next_y > 7:
-                continue
-
-            next_spot = board.get_box(x, next_y)
-            if self.is_valid_castle(board, current_spot, next_spot):
-                moves.append((x, next_y))
-        return moves
-
-    def is_valid_castle(self, board, start, end) -> bool:
-        if self.moves_made > 0:
-            return False
-
-        if self.risk_check(board, start.x, start.y):
-            return False
-
-        x = abs(end.x - start.x)
-        y = end.y - start.y
-        if abs(y) == 2 and x == 0:
-            y_vector = -1 if y < 0 else 1
-            for vector in range(y_vector, 2 * y_vector, y_vector):
-                next_y = start.y + vector
-                if self.risk_check(board, start.x, next_y):
+            for i in range(1, 4 if direction == -1 else 3):  # Check 4 squares if queen-side, 3 if king-side
+                # Checks for pieces between the King and rook
+                if chess_game.board.piece_at(px + i * direction, py) is not None:
                     return False
 
-                next_spot = board.get_box(start.x, next_y)
-                if next_spot.piece is not None:
+                # Verifies the King isn't crossing or landing on attacked squares
+                if any(other_piece.is_controlled_square(other_piece.x, other_piece.y, px + i * direction, py,
+                                                        chess_game)
+                    for other_piece in chess_game.board.pieces if other_piece.team != self.team):
                     return False
 
-            from .rook import Rook
-            rook_box = board.get_box(start.x, 0 if y < 0 else 7)
-            if isinstance(rook_box.piece, Rook) and rook_box.piece.moves_made == 0:
-                self.is_castling = True
+            rook_position = (7 if direction == 1 else 0, py)
+            rook_piece = chess_game.board.piece_at(rook_position[0], rook_position[1])
+
+            # Confirms there's an unmoved rook at the position
+            if isinstance(rook_piece, Rook) and not rook_piece.has_moved:
                 return True
+
         return False
-
-    def risk_check(self, board, x, y) -> bool:
-        for row in board.boxes:
-            for box in row:
-                if box.piece is None:
-                    continue
-                if (box.piece.is_white != self.is_white and
-                        (x, y) in box.controlled_squares):
-                    return True
-        return False
-
-    @property
-    def is_castling(self) -> bool:
-        """Get or set the king's castle status
-
-        Returns: bool
-            - True if king is castling
-            - False if king is not castling
-        """
-        return self._is_castling
-
-    @is_castling.setter
-    def is_castling(self, value) -> None:
-        if type(value) == bool:
-            self._is_castling = value
-        else:
-            raise TypeError("is_castling must be a boolean")

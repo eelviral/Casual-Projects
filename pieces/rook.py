@@ -1,131 +1,54 @@
-from piece import Piece
-from .king import King
+from pieces import Piece
+from utils.type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine import ChessGame
 
 
 class Rook(Piece):
-    def __init__(self, white):
-        super().__init__(white)
+    """
+    Represents a Rook piece in a chess game. Inherits from the Piece class.
 
-    def can_move(self, board, start, end) -> bool:
+    The Rook class is a subclass of the Piece class, with a specific type of PieceType.ROOK.
+
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'R', 'r').
+        type (PieceType): The type of the piece (ROOK).
+    """
+
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if rook can currently move to marked position
+        Initializes a Rook with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
-        x = end.x - start.x
-        y = end.y - start.y
+        symbol = 'R' if is_white else 'r'
+        super().__init__(x, y, team, is_white, symbol, PieceType.ROOK)
 
-        # Don't move if same square
-        if x == 0 and y == 0:
-            return False
-        
-        # If rook is moving horizontally or vertically
-        if bool(x == 0) ^ bool(y == 0):
-            # Make sure rook is not "jumping over" another piece horizontally
-            if x == 0:
-                y_vector = -1 if y < 0 else 1
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
+        """
+        Determine if a Rook's move is legal.
 
-                for i in range(y_vector, 7 * y_vector, y_vector):
-                    next_y = start.y + i
-                    if next_y < 0 or next_y > 7:
-                        break
-                    elif next_y == end.y:
-                        break
-                    elif board.get_box(start.x, next_y).piece is not None:
-                        return False
-            # Make sure rook is not "jumping over" another piece vertically
-            elif y == 0:
-                x_vector = -1 if x < 0 else 1
+        Args:
+            px (int): The current x-coordinate of the Rook.
+            py (int): The current y-coordinate of the Rook.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            chess_game (ChessGame): The chess game being played.
 
-                for i in range(x_vector, 7 * x_vector, x_vector):
-                    next_x = start.x + i
-                    if next_x < 0 or next_x > 7:
-                        break
-                    elif next_x == end.x:
-                        break
-                    elif board.get_box(next_x, start.y).piece is not None:
-                        return False
-
-            # If end position is empty, move
-            if end.piece is None:
-                return True
-
-            # Cannot move if there's a piece at the end position of the same color
-            if end.piece.is_white == self.is_white:
-                return False
-            else:
-                return True
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        if px == x or py == y:
+            if self._path_is_clear(px, py, x, y, board=chess_game.board, direction='linear'):
+                return self.can_capture_or_occupy_square(x, y, board=chess_game.board)
         return False
-
-    def controlled_squares(self, board, x, y) -> list:
-        squares = []
-        for i in [-1, 1]:
-            for j in range(i, 8 * i, i):
-                next_y = y + j
-                if next_y < 0 or next_y > 7:
-                    break
-
-                next_spot = board.get_box(x, next_y)
-                if next_spot.piece is None:
-                    squares.append((x, next_y))
-                else:
-                    if isinstance(next_spot.piece, King):
-                        squares.append((x, next_y))
-                        continue
-                    else:
-                        squares.append((x, next_y))
-                    break
-
-            for j in range(i, 8 * i, i):
-                next_x = x + j
-                if next_x < 0 or next_x > 7:
-                    break
-
-                next_spot = board.get_box(next_x, y)
-                if next_spot.piece is None:
-                    squares.append((next_x, y))
-                else:
-                    if isinstance(next_spot.piece, King):
-                        squares.append((next_x, y))
-                        continue
-                    else:
-                        squares.append((next_x, y))
-                    break
-        return squares
-
-    def legal_moves(self, board, x, y) -> list:
-        moves = []
-        current_spot = board.get_box(x, y)
-        for i in [-1, 1]:
-            for j in range(i, 8 * i, i):
-                next_y = y + j
-                if next_y < 0 or next_y > 7:
-                    break
-
-                next_spot = board.get_box(x, next_y)
-                if next_spot.piece is None:
-                    moves.append((x, next_y))
-                else:
-                    if next_spot.piece.is_white != current_spot.piece.is_white:
-                        if isinstance(next_spot.piece, King):
-                            moves.append((x, next_y))
-                            continue
-                        else:
-                            moves.append((x, next_y))
-                    break
-
-            for j in range(i, 8 * i, i):
-                next_x = x + j
-                if next_x < 0 or next_x > 7:
-                    break
-
-                next_spot = board.get_box(next_x, y)
-                if next_spot.piece is None:
-                    moves.append((next_x, y))
-                else:
-                    if next_spot.piece.is_white != current_spot.piece.is_white:
-                        if isinstance(next_spot.piece, King):
-                            moves.append((next_x, y))
-                            continue
-                        else:
-                            moves.append((next_x, y))
-                    break
-        return moves

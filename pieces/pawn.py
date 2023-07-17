@@ -1,186 +1,184 @@
-from piece import Piece
+from pieces import Piece
+from utils.type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine import ChessGame, GameEngine, Board
 
 
 class Pawn(Piece):
-    def __init__(self, white, at_top_of_board):
-        super().__init__(white)
-        self._is_promoted = False
-        self._two_step_move = False
-        self._moves_made = 0
-        self._en_passant = False
-        self.top_spawned = at_top_of_board
+    """
+    Represents a Pawn piece in a chess game. Inherits from the Piece class.
 
-    def can_move(self, board, start, end) -> bool:
+    The Pawn class is a subclass of the Piece class, with a specific type of PieceType.PAWN.
+
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'P', 'p').
+        type (PieceType): The type of the piece (PAWN).
+    """
+
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if pawn can currently move to marked position
+        Initializes a Pawn with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
+        symbol = 'P' if is_white else 'p'
+        super().__init__(x, y, team, is_white, symbol, PieceType.PAWN)
 
-        x = end.x - start.x
-        y = abs(end.y - start.y)
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
+        """
+        Determine if a pawn's move is legal.
 
-        # Don't move if same square
-        if x == 0 and y == 0:
-            return False
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            chess_game (ChessGame): The chess game being played.
 
-        if self.moves_made == 0 and y == 0:
-            if end.piece is not None:
-                return False
-
-            # If pawn moves two squares
-            if ((self.top_spawned and x == 2 and start.x == 1) or
-                    ((not self.top_spawned) and x == -2 and start.x == 6)):
-                self.two_step_move = True
-                return True
-
-        if not ((self.top_spawned and x == 1) or
-                (not self.top_spawned) and x == -1):
-            return False
-
-        if y == 0:
-            # If end position is empty, move
-            if end.piece is None:
-                self.is_valid_promotion(start, end)
-                return True
-            else:
-                return False
-        elif abs(x) == 1 and y == 1:
-            if end.piece is None:
-                # Check for en passant, and return False otherwise
-                return self.is_valid_en_passant(board, start, end)
-
-            # Cannot move if there's a piece at the end position of the same color
-            if end.piece.is_white == self.is_white:
-                return False
-            else:
-                self.is_valid_promotion(start, end)
-                return True
-        self.is_valid_promotion(start, end)
-
-    def controlled_squares(self, board, x, y) -> list:
-        squares = []
-        if self.top_spawned:
-            x_vector = 1
-        else:
-            x_vector = -1
-
-        next_x = x + x_vector
-        for y_vector in [-1, 1]:
-            next_y = y + y_vector
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-            squares.append((next_x, next_y))
-        return squares
-
-    def legal_moves(self, board, x, y) -> list:
-        moves = []
-        current_spot = board.get_box(x, y)
-        if self.top_spawned:
-            x_vector = 1
-        else:
-            x_vector = -1
-
-        # Vertical movement
-        # Two step move
-        if self.moves_made == 0:
-            for i in range(x_vector, 3 * x_vector, x_vector):
-                next_x = x + i
-                if next_x < 0 or next_x > 7:
-                    break
-                next_spot = board.get_box(next_x, y)
-                if next_spot.piece is None:
-                    moves.append((next_x, y))
-        # One step move
-        else:
-            next_x = x + x_vector
-            if 0 <= next_x <= 7:
-                next_spot = board.get_box(next_x, y)
-                if next_spot.piece is None:
-                    moves.append((next_x, y))
-
-        # Diagonal movement
-        next_x = x + x_vector
-        for y_vector in [-1, 1]:
-            next_y = y + y_vector
-            if (next_x < 0 or next_x > 7) or (next_y < 0 or next_y > 7):
-                continue
-
-            next_spot = board.get_box(next_x, next_y)
-            if self.can_move(board, current_spot, next_spot):
-                moves.append((next_x, next_y))
-        return moves
-
-    def is_valid_promotion(self, start, end) -> None:
-        if ((self.top_spawned and start.x == 6 and end.x == 7) or
-                ((not self.top_spawned) and start.x == 1 and end.x == 0)):
-            self.is_promoted = True
-        else:
-            self.is_promoted = False
-
-    def is_valid_en_passant(self, board, start, end) -> bool:
-        x = end.x - start.x
-        en_passant_piece = board.get_box(end.x - x, end.y).piece
-
-        # Make sure that en passant only works on another pawn
-        if not isinstance(en_passant_piece, Pawn):
-            return False
-
-        if (en_passant_piece is not None and
-                en_passant_piece.two_step_move and
-                en_passant_piece.moves_made == 1 and
-                en_passant_piece.is_white != self.is_white):
-            self._en_passant = True
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        if self._moving_forward(px, py, x, y, board=chess_game.board) or \
+                self._capturing(px, py, x, y, board=chess_game.board) or \
+                self.en_passant(px, py, x, y, game_engine=chess_game.engine):
             return True
-        # Cannot "capture" an empty spot
         else:
             return False
 
-    @property
-    def is_promoted(self):
-        """Get or set pawn promotion status
-
-        Returns: bool
-            - True if a pawn is being promoted
-            - False if no pawn is being promoted
+    def en_passant(self, px: int, py: int, x: int, y: int, game_engine: 'GameEngine') -> bool:
         """
-        return self._is_promoted
+        Check if the pawn is capturing by "en passant".
 
-    @is_promoted.setter
-    def is_promoted(self, value):
-        if type(value) == bool:
-            self._is_promoted = value
-        else:
-            raise TypeError("is_promoted must be a boolean")
+        En passant is a special pawn capture that can only occur immediately after a pawn
+        moves two ranks forward from its starting position. The opponent captures the
+        just-moved pawn "as it passes" through the first square.
 
-    @property
-    def two_step_move(self) -> bool:
-        """Get or set pawn's two step move status
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            game_engine: (GameEngine): The chess game's engine.
 
-        Returns: bool
-            - True if pawn made a two step move
-            - False if pawn did not make a two step move
+        Returns:
+            bool: True if the pawn is capturing by "en passant", False otherwise.
         """
-        return self._two_step_move
+        dx = x - px
+        dy = y - py
+        direction = -1 if self.team == TeamType.ALLY else 1
+        capture_rank = 3 if self.team == TeamType.ALLY else 4  # Decide the capture rank based on team
 
-    @two_step_move.setter
-    def two_step_move(self, value) -> None:
-        if type(value) == bool:
-            self._two_step_move = value
-        else:
-            raise TypeError("two_step_move must be a boolean")
+        last_move = game_engine.last_move
+        if last_move is None:
+            return False
 
-    @property
-    def en_passant(self) -> bool:
-        """Get or set en passant status
+        last_piece_moved, last_start_pos, last_end_pos = last_move
+        if not isinstance(last_piece_moved, Pawn):  # Last piece moved must be a Pawn
+            return False
 
-        Returns: bool
-            - True if en passant was played
-            - False if en passant was not played
+        # Make sure the pawn can't capture allies
+        if self.is_white == last_piece_moved.is_white:
+            return False
+
+        is_on_same_row = last_end_pos[1] == py
+        is_directly_next_to_pawn = abs(last_end_pos[0] - px) == 1
+
+        # The pawn must be beside this pawn
+        if is_on_same_row and is_directly_next_to_pawn:
+            # The pawn must have moved 2 steps
+            if last_start_pos[1] - last_end_pos[1] == 2 * direction:
+                # This pawn must be moving diagonally forward in the correct direction
+                if py == capture_rank and dy == direction and dx == (last_end_pos[0] - px):
+                    return True
+
+        return False
+
+    def is_controlled_square(self, current_x: int, current_y: int, target_x: int, target_y: int,
+                             chess_game: 'ChessGame') -> bool:
         """
-        return self._en_passant
+        Determine if a square is controlled by the Pawn.
 
-    @en_passant.setter
-    def en_passant(self, value) -> None:
-        if type(value) == bool:
-            self._en_passant = value
+        A Pawn controls the squares diagonally in front of it, depending on its color.
+
+        Parameters:
+            current_x (int): The current x-coordinate of this piece on the board.
+            current_y (int): The current y-coordinate of this piece on the board.
+            target_x (int): The x-coordinate of the proposed target square on the board.
+            target_y (int): The y-coordinate of the proposed target square on the board.
+            chess_game (ChessGame): The chess game being played.
+
+        Returns:
+            bool: True if the Pawn controls the target square, False otherwise.
+        """
+        dx = target_x - current_x
+        dy = target_y - current_y
+        direction = -1 if self.team == TeamType.ALLY else 1
+        is_capture_square = (abs(dx) == 1 and dy == direction) and \
+                self.can_capture_or_occupy_square(target_x, target_y, chess_game.board)
+
+        return is_capture_square or \
+            self.en_passant(px=current_x, py=current_y, x=target_x, y=target_y, game_engine=chess_game.engine)
+
+    def _moving_forward(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Check if the pawn is moving forward.
+
+        The pawn moves straight forward one square, with the option to move two squares
+        if it has not yet moved (pawn's first move). The pawn can't jump over pieces.
+
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the pawn is moving forward correctly, False otherwise.
+        """
+        dx = x - px
+        dy = y - py
+        direction = -1 if self.team == TeamType.ALLY else 1
+        is_in_starting_position = (py == 6 if self.team == TeamType.ALLY else py == 1)
+
+        if dx == 0 and dy == direction and board.piece_at(x, y) is None:
+            return True
+        elif dx == 0 and is_in_starting_position and dy == 2 * direction and \
+                board.piece_at(x, y) is None and board.piece_at(px, py + direction) is None:
+            return True
         else:
-            raise TypeError("en_passant must be a boolean")
+            return False
+
+    def _capturing(self, px: int, py: int, x: int, y: int, board: 'Board') -> bool:
+        """
+        Check if the pawn is capturing an opponent's piece.
+
+        The pawn can capture an enemy piece on either of the two spaces adjacent to
+        the space in front of it (diagonal forward), but cannot move to these spaces
+        if they are vacant.
+
+        Args:
+            px (int): The current x-coordinate of the pawn.
+            py (int): The current y-coordinate of the pawn.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            board (Board): The game board.
+
+        Returns:
+            bool: True if the pawn is capturing correctly, False otherwise.
+        """
+        dx = x - px
+        dy = y - py
+        direction = -1 if self.team == TeamType.ALLY else 1
+        return (abs(dx) == 1 and dy == direction) and \
+            (board.piece_at(x, y) is not None and self.can_capture_or_occupy_square(x, y, board))

@@ -1,29 +1,59 @@
-from piece import Piece
-from .rook import Rook
-from .bishop import Bishop
+from pieces import Piece
+from utils.type import PieceType, TeamType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine import ChessGame
 
 
 class Queen(Piece):
-    def __init__(self, white):
-        super().__init__(white)
-        self.rook = Rook(white)
-        self.bishop = Bishop(white)
+    """
+    Represents a Queen piece in a chess game. Inherits from the Piece class.
 
-    def can_move(self, board, start, end) -> bool:
+    The Queen class is a subclass of the Piece class, with a specific type of PieceType.QUEEN.
+
+    Attributes:
+        x (int): The x-coordinate of the piece on the board.
+        y (int): The y-coordinate of the piece on the board.
+        team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+        is_white (bool): The color of the piece (e.g. True if white, False if black).
+        symbol (str): The character symbol representing the piece (e.g., 'Q', 'q').
+        type (PieceType): The type of the piece (QUEEN).
+    """
+
+    def __init__(self, x: int, y: int, team: TeamType, is_white: bool):
         """
-        Determines if queen can currently move to marked position
+        Initializes a Queen with a team, symbol, and coordinates.
+
+        Args:
+            x (int): The x-coordinate of the piece on the board.
+            y (int): The y-coordinate of the piece on the board.
+            team (TeamType): The team the piece belongs to (e.g., OPPONENT, ALLY).
+            is_white (bool): The color of the piece (e.g. True if white, False if black).
         """
-        if (self.rook.can_move(board, start, end)
-                or self.bishop.can_move(board, start, end)):
-            return True
+        symbol = 'Q' if is_white else 'q'
+        super().__init__(x, y, team, is_white, symbol, PieceType.QUEEN)
+
+    def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:
+        """
+        Determine if a Queen's move is legal.
+
+        Args:
+            px (int): The current x-coordinate of the Queen.
+            py (int): The current y-coordinate of the Queen.
+            x (int): The x-coordinate of the proposed move destination.
+            y (int): The y-coordinate of the proposed move destination.
+            chess_game (ChessGame): The chess game being played.
+
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
+        if not self.can_capture_or_occupy_square(x, y, board=chess_game.board):
+            return False
+
+        if px == x or py == y:
+            return self._path_is_clear(px, py, x, y, board=chess_game.board, direction='linear')
+        elif abs(x - px) == abs(y - py):
+            return self._path_is_clear(px, py, x, y, board=chess_game.board, direction='diagonal')
+
         return False
-
-    def controlled_squares(self, board, x, y) -> list:
-        rook_squares = self.rook.controlled_squares(board, x, y)
-        bishop_squares = self.bishop.controlled_squares(board, x, y)
-        return rook_squares + bishop_squares
-
-    def legal_moves(self, board, x, y) -> list:
-        rook_moves = self.rook.legal_moves(board, x, y)
-        bishop_moves = self.bishop.legal_moves(board, x, y)
-        return rook_moves + bishop_moves
