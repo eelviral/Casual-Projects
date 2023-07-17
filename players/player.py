@@ -36,7 +36,7 @@ class Player:
         self._is_human = value
 
     def ai_choose_move(self, game: 'ChessGame') -> tuple[Piece, int, int, Piece]:
-        legal_moves = game.current_team_legal_moves()
+        legal_moves = game.move_generator.current_team_legal_moves()
         if legal_moves == []:
             return None, -1, -1, None
         

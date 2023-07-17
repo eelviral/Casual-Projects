@@ -51,7 +51,7 @@ class Piece(ABC):
             str: A string representation of the Piece object.
         """
         team = "White" if self.is_white else "Black"
-        return f"Piece({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
+        return f"{self.__class__.__name__}({self.symbol}, position=({self.x}, {self.y}), team={team}, has_moved={self.has_moved})"
 
     @property
     def x(self) -> int:
@@ -135,6 +135,37 @@ class Piece(ABC):
             value (bool): The new moved state of the piece.
         """
         self._has_moved = value
+
+    @property
+    def value(self) -> int:
+        """
+        The material value of the piece, determined by the type of the piece.
+
+        This is a read-only property. It's value is assigned when the Piece object is instantiated,
+        based on the PieceType of the Piece.
+
+        For example, the value of a Pawn is usually considered to be 1, while the value of a Queen is considered to be 9.
+
+        This property takes into account the team of the piece. For example, if the piece is white, a Pawn is +1,
+        if the piece is black, a Pawn is -1.
+
+        Note: Different chess systems may use different piece value systems. The system used here is a standard,
+        widely-accepted system, but it may not perfectly represent the 'true' value of a piece in every possible game situation.
+
+        Returns:
+            int: The material value of the piece.
+        """
+        values = {
+            PieceType.PAWN: 10,
+            PieceType.KNIGHT: 30,
+            PieceType.BISHOP: 30,
+            PieceType.ROOK: 50,
+            PieceType.QUEEN: 90,
+            PieceType.KING: 900
+        }
+
+        base_value = values.get(self._type, 0)
+        return base_value if self._is_white else -base_value
 
     @abstractmethod
     def legal_move(self, px: int, py: int, x: int, y: int, chess_game: 'ChessGame') -> bool:

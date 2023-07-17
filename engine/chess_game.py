@@ -36,6 +36,8 @@ class ChessGame:
     def __init__(self):
         """
         Initializes a Game with two players, a board, and a game engine.
+        One player is human and the other is AI.
+        A game event notifier is also set up for event handling.
         """
         self.players = [Player(name="player 1", team=TeamType.ALLY),
                         Player(name="player 2", team=TeamType.OPPONENT, is_human=False)]
@@ -47,7 +49,7 @@ class ChessGame:
         self._engine = GameEngine(self)
         self._status = GameStatus(self)
         self._game_event_notifier = GameEventNotifier()
-        
+
         self.ui = ChessUI(self)
         self.ui.run()
 
@@ -121,7 +123,7 @@ class ChessGame:
         """
         return self._status
 
-    def make_move(self, piece: Piece, new_x: int, new_y: int, promotion_piece: type[Piece] = None) -> bool:
+    def make_move(self, piece: Piece, new_x: int, new_y: int, promotion_piece: Piece = None) -> bool:
         """
         Makes a move in the game. If the move is legal and successful, the turn is passed to the other player.
 
@@ -129,6 +131,7 @@ class ChessGame:
             piece (Piece): The piece to move.
             new_x (int): The new x-coordinate for the piece.
             new_y (int): The new y-coordinate for the piece.
+            promotion_piece (type[Piece]): The piece type to promote a pawn to if the move leads to a promotion. Defaults to None.
 
         Returns:
             bool: True if the move was successful, False otherwise.
@@ -145,59 +148,70 @@ class ChessGame:
         else:
             promotion_piece = None
             move_successful = self.engine.move_piece(piece, new_x, new_y, promotion_piece)
-        
+
         if move_successful:
-            events = self.get_state(self.current_player.team)
-
-            # Record successful move in game engine
-            self.engine.last_move = Move(
-                piece=piece,
-                start_position=(original_x, original_y),
-                end_position=(new_x, new_y),
-                is_capture=GameEvent.CAPTURE in events,
-                is_king_side_castle=GameEvent.KING_SIDE_CASTLE in events,
-                is_queen_side_castle=GameEvent.QUEEN_SIDE_CASTLE in events,
-                is_check=GameEvent.CHECK in events,
-                is_stalemate=GameEvent.STALEMATE in events,
-                is_checkmate=GameEvent.CHECKMATE in events,
-                promotion=promotion_piece
-            )
+            self.update_game_state(piece, original_x, original_y, new_x, new_y, promotion_piece)
             print(repr(self.engine.last_move))
-
             self.ui.update()  # Refresh the UI board after each move
-            self.check_game_over()
 
         return move_successful
+
+    def update_game_state(self, piece: Piece, original_x: int, original_y: int, new_x: int, new_y: int,
+                          promotion_piece: Piece) -> list[GameEvent]:
+        """
+        Updates the game state after a move has been made. Also sets the last move details.
+
+        Args:
+            piece (Piece): The piece that moved.
+            original_x (int): The original x-coordinate of the piece.
+            original_y (int): The original y-coordinate of the piece.
+            new_x (int): The new x-coordinate of the piece.
+            new_y (int): The new y-coordinate of the piece.
+            promotion_piece (Piece): The piece to which a pawn has been promoted, if applicable.
+
+        Returns:
+            list[GameEvent]: List of game events that occurred due to the move.
+        """
+        events = self.get_state(self.current_player.team)
+        self.engine.last_move = Move(
+            piece=piece,
+            start_position=(original_x, original_y),
+            end_position=(new_x, new_y),
+            is_capture=GameEvent.CAPTURE in events,
+            is_king_side_castle=GameEvent.KING_SIDE_CASTLE in events,
+            is_queen_side_castle=GameEvent.QUEEN_SIDE_CASTLE in events,
+            is_check=GameEvent.CHECK in events,
+            is_stalemate=GameEvent.STALEMATE in events,
+            is_checkmate=GameEvent.CHECKMATE in events,
+            promotion=promotion_piece
+        )
+        if GameEvent.CHECKMATE in events or GameEvent.STALEMATE in events:
+            self.state = events[0]
+
+        return events
 
     def next_turn(self):
         """
         Ends the current player's turn and passes the turn to the other player.
+        If the next player is an AI, the AI makes its move before the turn is passed back to the human player.
         """
         self.current_player = self.players[1] if self.current_player == self.players[0] else self.players[0]
         if not self.current_player.is_human:
             move = self.current_player.ai_choose_move(self)
-            
+
             if move != (None, -1, -1, None):
                 cpu_piece, cpu_x, cpu_y, cpu_promotion_piece = move
-                self.make_move(piece=cpu_piece, 
-                            new_x=cpu_x, 
-                            new_y=cpu_y, 
-                            promotion_piece=cpu_promotion_piece)
+                self.make_move(piece=cpu_piece,
+                               new_x=cpu_x,
+                               new_y=cpu_y,
+                               promotion_piece=cpu_promotion_piece)
                 self.next_turn()  # switch turn back to the human player after AI makes a move
             else:
-                # End the game
-                self.check_game_over()
-                print(f"{self.get_winner().name} wins!")
+                if self.is_game_over():
+                    print(f"{self.get_winner().name} wins!")
 
-
-
-    def check_game_over(self):
-        """
-        Checks if the game is over (i.e., if the current player is in checkmate or stalemate).
-        """
-        main_state = self.get_state(self.current_player.team)[0]
-        if main_state == GameEvent.CHECKMATE or main_state == GameEvent.STALEMATE:
-            self.state = main_state
+    def is_game_over(self) -> bool:
+        return self.state == GameEvent.CHECKMATE or self.state == GameEvent.STALEMATE
 
     def get_winner(self) -> Optional[Player]:
         """
@@ -220,25 +234,13 @@ class ChessGame:
         # Temporarily store the UI object
         ui_temp = self.ui
         self.ui = None
-        
+
         # Copy the game
         copied_game = copy.deepcopy(self)
-        
+
         # The copied game does not have a UI object
         self.ui = ui_temp
         return copied_game
-
-    def current_team_legal_moves(self) -> list[tuple[Piece, tuple[int, int]]]:
-        """
-        Calculates all legal moves for the current team.
-
-        Returns:
-            list[tuple[Piece, tuple[int, int]]]: List of legal moves, each move is represented by a tuple
-            where the first element is the piece and the second element is a tuple (x, y) representing
-            the new position.
-        """
-        return [(piece, move) for piece in self.board.pieces if piece.team == self.current_player.team
-                for move in self.move_generator.piece_legal_moves(piece)]
 
     def get_state(self, team: TeamType) -> list[GameEvent]:
         """
