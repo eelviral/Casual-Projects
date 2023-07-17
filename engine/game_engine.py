@@ -29,7 +29,7 @@ class GameEngine:
         """
         self.game = chess_game
         self.board = chess_game.board
-        self._last_move = Move(None, (-1, -1), (-1, -1))  # Initialize with an empty move
+        self.last_move = Move(None, (-1, -1), (-1, -1))  # Initialize with an empty move
 
     @property
     def last_move(self) -> Move:
@@ -53,7 +53,7 @@ class GameEngine:
         """
         self._last_move = replace(move)
 
-    def move_piece(self, piece: Piece, new_x: int, new_y: int, promotion_piece: type[Piece] = None) -> bool:
+    def move_piece(self, piece: Piece, new_x: int, new_y: int, promotion_piece: Piece = None) -> bool:
         """
         Moves a piece to a new position on the board. If the new position is occupied by another piece,
         that piece is removed from the board. If the new position is occupied by an ally, the move is not made.
@@ -62,7 +62,7 @@ class GameEngine:
             piece (Piece): The piece to move.
             new_x (int): The new x-coordinate for the piece.
             new_y (int): The new y-coordinate for the piece.
-            promotion_piece (type[Piece]): The type of piece that the pawn should be promoted to.
+            promotion_piece (type[Piece]): The piece type to promote a pawn to. Defaults to None.
 
         Returns:
             bool: True if the move is successful, False otherwise.
@@ -140,7 +140,18 @@ class GameEngine:
                 rook.x = rook_new_x
                 rook.has_moved = True
 
-    def promote(self, piece: Pawn, promotion_piece: type[Piece]):
+    def promote(self, piece: Pawn, promotion_piece: Piece):
+        """
+        Promotes a pawn to a different piece.
+
+        Args:
+            piece (Pawn): The pawn to be promoted.
+            promotion_piece (Piece): The piece that the pawn should be promoted to.
+        """
+        self.board.remove(piece)
+        self.board.add(promotion_piece)
+
+    def promote_from_ui(self, piece: Pawn, promotion_piece: type[Piece]):
         """
         Promotes a pawn to a different piece.
 
@@ -149,5 +160,8 @@ class GameEngine:
             promotion_piece (type[Piece]): The type of piece that the pawn should be promoted to.
         """
         self.board.remove(piece)
-        new_piece = promotion_piece(x=piece.x, y=piece.y, team=piece.team, is_white=piece.is_white)
+        new_piece = promotion_piece(x=piece.x,
+                                    y=piece.y,
+                                    team=piece.team,
+                                    is_white=piece.is_white)
         self.board.add(new_piece)

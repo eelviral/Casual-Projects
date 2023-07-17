@@ -1,10 +1,10 @@
 import tkinter as tk
 from pieces import Piece, Pawn
 from utils.constants import piece_classes
+from engine.game_event import GameEvent
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from engine import GameEvent
     from ui import ChessUI
 
 
@@ -36,6 +36,26 @@ class PromotionUI:
 
         self.create_promotion_screen()
         self.chess_ui.root.after(100, lambda: self.wait_for_promotion(pawn))
+
+    @property
+    def selected_promotion(self) -> type[Piece] or None:
+        """
+        Get the piece that has been selected for promotion.
+
+        Returns:
+            Piece or None: The piece that has been selected for promotion or None if no piece has been selected yet.
+        """
+        return self._selected_promotion
+
+    @selected_promotion.setter
+    def selected_promotion(self, piece: type[Piece] or None):
+        """
+        Set the piece to be promoted to upon user's selection.
+
+        Args:
+            piece (Piece or None): The selected piece to be promoted to, or None to reset the selection.
+        """
+        self._selected_promotion = piece
 
     def create_promotion_screen(self):
         """
@@ -99,26 +119,6 @@ class PromotionUI:
             promotion_piece = self.selected_promotion
             self.selected_promotion = None  # reset selected promotion
 
-            self.chess_ui.game.engine.promote(pawn, promotion_piece)  # promote the pawn
+            self.chess_ui.game.engine.promote_from_ui(pawn, promotion_piece)  # promote the pawn
             self.notifier.notify(GameEvent.PROMOTION)  # promotion event notification
             self.chess_ui.update()  # update immediately after promotion
-
-    @property
-    def selected_promotion(self) -> Piece or None:
-        """
-        Get the piece that has been selected for promotion.
-
-        Returns:
-            Piece or None: The piece that has been selected for promotion or None if no piece has been selected yet.
-        """
-        return self._selected_promotion
-
-    @selected_promotion.setter
-    def selected_promotion(self, piece: Piece or None):
-        """
-        Set the piece to be promoted to upon user's selection.
-
-        Args:
-            piece (Piece or None): The selected piece to be promoted to, or None to reset the selection.
-        """
-        self._selected_promotion = piece
